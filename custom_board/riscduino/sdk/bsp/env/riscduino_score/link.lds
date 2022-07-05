@@ -1,40 +1,24 @@
-/*
-//////////////////////////////////////////////////////////////////////////////
-// SPDX-FileCopyrightText: 2021, Dinesh Annayya                           ////
-//                                                                        ////
-// Licensed under the Apache License, Version 2.0 (the "License");        ////
-// you may not use this file except in compliance with the License.       ////
-// You may obtain a copy of the License at                                ////
-//                                                                        ////
-//      http://www.apache.org/licenses/LICENSE-2.0                        ////
-//                                                                        ////
-// Unless required by applicable law or agreed to in writing, software    ////
-// distributed under the License is distributed on an "AS IS" BASIS,      ////
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.///
-// See the License for the specific language governing permissions and    ////
-// limitations under the License.                                         ////
-// SPDX-License-Identifier: Apache-2.0                                    ////
-// SPDX-FileContributor: Dinesh Annayya <dinesha@opencores.org>           ////
-//////////////////////////////////////////////////////////////////////////////
-**/
-/*
-* @brief      bare metal tests' linker script
-*/
-
 OUTPUT_ARCH( "riscv" )
-ENTRY(_start)
 
-MEMORY {
-  ROM (rxx) : ORIGIN = 0x0, LENGTH = 128K
-  RAM (rwx) : ORIGIN = 0x08000000, LENGTH = 64K
-  TCM (rwx) : ORIGIN = 0x0C480000, LENGTH = 2K
+ENTRY( _start )
+
+MEMORY
+{
+  flash (rxai!w) : ORIGIN = 0x000000, LENGTH = 512M
+  ram (wxa!ri) : ORIGIN = 0x08000000, LENGTH = 64K
+  tcm (rwx) : ORIGIN = 0x0C480000, LENGTH = 2K
 }
 
-STACK_SIZE = 1024;
+PHDRS
+{
+  flash PT_LOAD;
+  ram_init PT_LOAD;
+  ram PT_NULL;
+}
 
-CL_SIZE = 32;
-
-SECTIONS {
+SECTIONS
+{
+  __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
 
   /* code segment */
   .text.init 0 : { 
@@ -48,71 +32,147 @@ SECTIONS {
     . = 0x100;
     PROVIDE(__TEXT_START__ = .);
     *(.text.init) 
-  } >ROM
+  } >flash AT>flash :flash
 
-  .text  : {
-    *start.S.o(.text .text.*)
+  .text           :
+  {
+     *start.S.o(.text .text.*)
     *(.text .text.*)
-    *(sc_test_section)
-    . = ALIGN(CL_SIZE);
-     PROVIDE(__TEXT_END__ = .);
-  } >ROM
+    *(.text.unlikely .text.unlikely.*)
+    *(.text.startup .text.startup.*)
+    *(.gnu.linkonce.t.*)
+  } >flash AT>flash :flash
 
-  /* data segment */
-  .data : {
+  .fini           :
+  {
+    KEEP (*(SORT_NONE(.fini)))
+  } >flash AT>flash :flash
+
+  PROVIDE (__etext = .);
+  PROVIDE (_etext = .);
+  PROVIDE (etext = .);
+
+  .rodata         :
+  {
+    *(.rdata)
+    *(.rodata .rodata.*)
+    *(.gnu.linkonce.r.*)
+  } >flash AT>flash :flash
+
+  . = ALIGN(4);
+
+  .preinit_array  :
+  {
+    PROVIDE_HIDDEN (__preinit_array_start = .);
+    KEEP (*(.preinit_array))
+    PROVIDE_HIDDEN (__preinit_array_end = .);
+  } >flash AT>flash :flash
+
+  .init_array     :
+  {
+    PROVIDE_HIDDEN (__init_array_start = .);
+    KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
+    KEEP (*(.init_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .ctors))
+    PROVIDE_HIDDEN (__init_array_end = .);
+  } >flash AT>flash :flash
+
+  .fini_array     :
+  {
+    PROVIDE_HIDDEN (__fini_array_start = .);
+    KEEP (*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
+    KEEP (*(.fini_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
+    PROVIDE_HIDDEN (__fini_array_end = .);
+  } >flash AT>flash :flash
+
+  .ctors          :
+  {
+    /* gcc uses crtbegin.o to find the start of
+       the constructors, so we make sure it is
+       first.  Because this is a wildcard, it
+       doesn't matter if the user does not
+       actually link against crtbegin.o; the
+       linker won't look for a file to match a
+       wildcard.  The wildcard also means that it
+       doesn't matter which directory crtbegin.o
+       is in.  */
+    KEEP (*crtbegin.o(.ctors))
+    KEEP (*crtbegin?.o(.ctors))
+    /* We don't want to include the .ctor section from
+       the crtend.o file until after the sorted ctors.
+       The .ctor section from the crtend file contains the
+       end of ctors marker and it must be last */
+    KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
+    KEEP (*(SORT(.ctors.*)))
+    KEEP (*(.ctors))
+  } >flash AT>flash :flash
+
+  .dtors          :
+  {
+    KEEP (*crtbegin.o(.dtors))
+    KEEP (*crtbegin?.o(.dtors))
+    KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
+    KEEP (*(SORT(.dtors.*)))
+    KEEP (*(.dtors))
+  } >flash AT>flash :flash
+
+  .lalign         :
+  {
+    . = ALIGN(4);
+    PROVIDE( _data_lma = . );
+  } >flash AT>flash :flash
+
+  .dalign         :
+  {
+    . = ALIGN(4);
+    PROVIDE( _data = . );
+  } >ram AT>flash :ram_init
+
+  .data          :
+  {
     *(.data .data.*)
-    . = ALIGN(CL_SIZE);
-  } >RAM
+    *(.gnu.linkonce.d.*)
+  } >ram AT>flash :ram_init
 
-  .sdata : {
-    __global_pointer$ = . + 0x800;
-    *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata*)
-    *(.sdata .sdata.* .gnu.linkonce.s.*)
-    . = ALIGN(CL_SIZE);
-  } >RAM
+  .srodata        :
+  {
+    PROVIDE( _gp = . + 0x800 );
+    *(.srodata.cst16)
+    *(.srodata.cst8)
+    *(.srodata.cst4)
+    *(.srodata.cst2)
+    *(.srodata .srodata.*)
+  } >ram AT>flash :ram_init
 
-  /* thread-local data segment */
-  .tdata : {
-    PROVIDE(_tls_data = .);
-    PROVIDE(_tdata_begin = .);
-    *(.tdata .tdata.*)
-    PROVIDE(_tdata_end = .);
-    . = ALIGN(CL_SIZE);
-  } >RAM
+  .sdata          :
+  {
+    *(.sdata .sdata.*)
+    *(.gnu.linkonce.s.*)
+  } >ram AT>flash :ram_init
 
-  .tbss : {
-    PROVIDE(__BSS_START__ = .);
-    *(.tbss .tbss.*)
-    . = ALIGN(CL_SIZE);
-    PROVIDE(_tbss_end = .);
-  } >RAM
+  . = ALIGN(4);
+  PROVIDE( _edata = . );
+  PROVIDE( edata = . );
 
-  /* bss segment */
-  .sbss : {
-    *(.sbss .sbss.* .gnu.linkonce.sb.*)
-    *(.scommon)
-  } >RAM
-
-  .bss : {
+  PROVIDE( _fbss = . );
+  PROVIDE( __bss_start = . );
+  .bss            :
+  {
+    *(.sbss*)
+    *(.gnu.linkonce.sb.*)
     *(.bss .bss.*)
-    . = ALIGN(CL_SIZE);
-    PROVIDE(__BSS_END__ = .);
-  } >RAM
+    *(.gnu.linkonce.b.*)
+    *(COMMON)
+    . = ALIGN(4);
+  } >ram AT>ram :ram
 
-  _end = .;
-  PROVIDE(__end = .);
+  . = ALIGN(8);
+  PROVIDE( _end = . );
+  PROVIDE( end = . );
 
-  /* End of uninitalized data segement */
-
-  .stack ORIGIN(TCM) + LENGTH(TCM) - STACK_SIZE : {
-    FILL(0);
-    PROVIDE(__STACK_START__ = .);
-    . += STACK_SIZE;
-    PROVIDE(__C_STACK_TOP__ = .);
-    PROVIDE(__STACK_END__ = .);
-  } >TCM
-
-  /DISCARD/ : {
-    *(.eh_frame .eh_frame.*)
-  }
+  .stack ORIGIN(ram) + LENGTH(ram) - __stack_size :
+  {
+    PROVIDE( _heap_end = . );
+    . = __stack_size;
+    PROVIDE( _sp = . );
+  } >ram AT>ram :ram
 }

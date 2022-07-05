@@ -59,10 +59,10 @@ UARTClass::sio_getchar(int blocking)
 int
 UARTClass::sio_putchar(char c, int blocking)
 {
-  volatile uint32_t *val = UART_REGP(UART_REG_TXFIFO);
-  uint32_t busy = (*val) & 0x80000000;
+  volatile uint32_t *val = UART_REGP(UART_REG_STATUS);
+  uint32_t busy = (*val) & 0x00000001;
   if (blocking) {
-    while (*val & 0x80000000);
+    while (*val & 0x00000001);
   } else if (busy) {
       return 1;
   }
@@ -71,16 +71,24 @@ UARTClass::sio_putchar(char c, int blocking)
 }
 
 
-/*
- * Set RS-232 baudrate.  Works well with FT-232R from 300 to 3000000 bauds.
- */
+
+/****************************************************************
+// 16x Baud clock generation
+//  Baud Rate config = (F_CPU / (BAUD * 16)) - 2 
+// Example: to generate 19200 Baud clock from 50Mhz Link clock
+//    cfg_baud_16x = ((50 * 1000 * 1000) / (19200 * 16)) - 2
+//    cfg_baud_16x = 0xA0 (160)
+****************************************************************/
+
 void
 UARTClass::sio_setbaud(int bauds)
 {
 
-  //F_Baud = f_in/(div+1) 
+  uint32_t F_Baud; 
+  F_Baud = (F_CPU/(bauds * 16)) - 2;
 
-  UART_REG(UART_REG_DIV) = F_CPU / bauds - 1;
+  UART_REG(UART_REG_BAUD_LSB) = F_Baud & 0xFF;
+  UART_REG(UART_REG_BAUD_MSB) = (F_Baud >> 8) & 0x0F;
  
 }
 
@@ -90,28 +98,22 @@ UARTClass::sio_setbaud(int bauds)
 void
 UARTClass::begin(unsigned long bauds)
 {
-  GPIO_REG(GPIO_OUTPUT_XOR)&= ~(IOF0_UART0_MASK);
-  GPIO_REG(GPIO_IOF_SEL)   &= ~(IOF0_UART0_MASK);
-  GPIO_REG(GPIO_IOF_EN)    |= IOF0_UART0_MASK;
+  GPIO_REG(GPIO_MULTI_FUNC) |= IOF0_UART0_ENB;
 
-  //F_Baud = f_in/(div+1) 
+  UART_REG(UART_REG_CTRL) |= UART_TXEN;
+  UART_REG(UART_REG_CTRL) |= UART_RXEN;
 
-  UART_REG(UART_REG_DIV) = F_CPU / bauds - 1;
-  UART_REG(UART_REG_TXCTRL) |= UART_TXEN;
-  UART_REG(UART_REG_RXCTRL) |= UART_RXEN;
-
-	
-//  sio_setbaud(bauds);
+  sio_setbaud(bauds);
 }
 
 
 void
 UARTClass::end(void)
 {
-  GPIO_REG(GPIO_IOF_EN)    &= ~IOF0_UART0_MASK;
+  GPIO_REG(GPIO_MULTI_FUNC)    &= ~IOF0_UART0_ENB;
 
-  UART_REG(UART_REG_TXCTRL) &= ~UART_TXEN;
-  UART_REG(UART_REG_RXCTRL) &= ~UART_RXEN;
+  UART_REG(UART_REG_CTRL) &= ~UART_TXEN;
+  UART_REG(UART_REG_CTRL) &= ~UART_RXEN;
 
 }
 
@@ -129,7 +131,7 @@ int
 UARTClass::availableForWrite(void)
 {
   int busy;
-  busy = ((int32_t)UART_REG(UART_REG_TXFIFO) < 0);
+  busy = (((int32_t)UART_REG(UART_REG_STATUS) & 0x1) == 0x1);
   return (!busy);
 }
 

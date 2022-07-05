@@ -78,8 +78,8 @@ int main (void){
 
   // 115200 Baud Rate
   UART0_REG(UART_REG_DIV) = 138;
-  UART0_REG(UART_REG_TXCTRL) = UART_TXEN;
-  UART0_REG(UART_REG_RXCTRL) = UART_RXEN;
+  UART0_REG(UART_REG_CTRL) |= UART_TXEN;
+  UART0_REG(UART_REG_CTRL) |= UART_RXEN;
 
   // Wait a bit to avoid corruption on the UART.
   // (In some cases, switching to the IOF can lead
