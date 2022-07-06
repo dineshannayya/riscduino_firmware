@@ -195,20 +195,22 @@ size_t Print::println(const Printable& x)
 size_t Print::printNumber(unsigned long n, uint8_t base) {
   char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
   char *str = &buf[sizeof(buf) - 1];
+  size_t size = 0;
 
   *str = '\0';
 
   // prevent crash if called with base == 1
   if (base < 2) base = 10;
-
+  
   do {
     unsigned long m = n;
     n /= base;
     char c = m - base * n;
     *--str = c < 10 ? c + '0' : c + 'A' - 10;
+    size ++;
   } while(n);
 
-  return write(str);
+  return write(str,size);
 }
 
 size_t Print::printFloat(double number, uint8_t digits) 
