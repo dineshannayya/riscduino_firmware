@@ -3,6 +3,7 @@
 #ifndef _RISCDUINO_GPIO_H
 #define _RISCDUINO_GPIO_H
 
+#define GLBL_CFG         (0x04)  // Global Config
 #define GPIO_IDATA       (0x14)  // GPIO Data In
 #define GPIO_ODATA       (0x18)  // GPIO Data Out
 #define GPIO_DSEL        (0x1C)  // GPIO Direction Select

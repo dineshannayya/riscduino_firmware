@@ -28,7 +28,7 @@
 #define UART0_BASE_ADDR _AC(0x10010000,UL)
 #define SPI0_BASE_ADDR _AC(0x10014000,UL)
 #define PWM0_BASE_ADDR _AC(0x10015000,UL)
-#define UART1_BASE_ADDR _AC(0x10023000,UL)
+#define UART1_BASE_ADDR _AC(0x10010100,UL)
 #define SPI1_BASE_ADDR _AC(0x10024000,UL)
 #define PWM1_BASE_ADDR _AC(0x10025000,UL)
 #define SPI2_BASE_ADDR _AC(0x10034000,UL)
@@ -64,10 +64,13 @@
 
 #define IOF0_UART0_MASK         _AC(0x00000100, UL)
 #define IOF0_UART0_ENB          _AC(0x00000100, UL)
+#define IOF0_UART0_RST          _AC(0x00000004, UL)
 #define IOF_UART0_RX   (16u)
 #define IOF_UART0_TX   (17u)
 
-#define IOF0_UART1_MASK         _AC(0x03000000, UL)
+#define IOF0_UART1_MASK         _AC(0x00000200, UL)
+#define IOF0_UART1_ENB          _AC(0x00000200, UL)
+#define IOF0_UART1_RST          _AC(0x00000040, UL)
 #define IOF_UART1_RX (24u)
 #define IOF_UART1_TX (25u)
 
@@ -106,6 +109,7 @@
 #define SPI2_REG(offset) _REG32(SPI2_BASE_ADDR, offset)
 #define UART0_REG(offset) _REG32(UART0_BASE_ADDR, offset)
 #define UART1_REG(offset) _REG32(UART1_BASE_ADDR, offset)
+#define UART_REG(base,offset) _REG32(base, offset)
 
 // Misc
 

@@ -23,17 +23,23 @@
 
 #include "variant.h"
 
-UARTClass Serial;
+UARTClass Serial(UART0_BASE_ADDR,0);
+UARTClass Serial1(UART1_BASE_ADDR,1);
+
+UARTClass::UARTClass(uint32_t base_addr, uint32_t uart_id)
+{
+    base = base_addr;
+    id   = uart_id;
+}
 
 int
 UARTClass::sio_probe_rx()
 {
-  int32_t c;
-
-  if ((c = UART_REG(UART_REG_RXFIFO)) >= 0) {
-    sio_rxbuf[sio_rxbuf_head++] = c;
-    sio_rxbuf_head &= SIO_RXBUFMASK;
-    return(1);
+  uint32_t val = UART_REG(base,UART_REG_STATUS);
+  if((val & 0x00000002) == 0) { // If RX FIFO is Not Empty
+     sio_rxbuf[sio_rxbuf_head++] = UART_REG(base,UART_REG_RXFIFO);
+     sio_rxbuf_head &= SIO_RXBUFMASK;
+     return(1);
   }
   return(0);
 }
@@ -59,14 +65,14 @@ UARTClass::sio_getchar(int blocking)
 int
 UARTClass::sio_putchar(char c, int blocking)
 {
-  volatile uint32_t *val = UART_REGP(UART_REG_STATUS);
+  volatile uint32_t *val = UART_REGP(base,UART_REG_STATUS);
   uint32_t busy = (*val) & 0x00000001;
   if (blocking) {
     while (*val & 0x00000001);
   } else if (busy) {
       return 1;
   }
-  UART_REG(UART_REG_TXFIFO) = c;
+  UART_REG(base,UART_REG_TXFIFO) = c;
   return 0; 
 }
 
@@ -87,8 +93,8 @@ UARTClass::sio_setbaud(int bauds)
   uint32_t F_Baud; 
   F_Baud = (F_CPU/(bauds * 16)) - 2;
 
-  UART_REG(UART_REG_BAUD_LSB) = F_Baud & 0xFF;
-  UART_REG(UART_REG_BAUD_MSB) = (F_Baud >> 8) & 0x0F;
+  UART_REG(base,UART_REG_BAUD_LSB) = F_Baud & 0xFF;
+  UART_REG(base,UART_REG_BAUD_MSB) = (F_Baud >> 8) & 0x0F;
  
 }
 
@@ -98,10 +104,16 @@ UARTClass::sio_setbaud(int bauds)
 void
 UARTClass::begin(unsigned long bauds)
 {
-  GPIO_REG(GPIO_MULTI_FUNC) |= IOF0_UART0_ENB;
+  if(id == 0) { // UART-0
+     GPIO_REG(GLBL_CFG)        |= IOF0_UART0_RST;
+     GPIO_REG(GPIO_MULTI_FUNC) |= IOF0_UART0_ENB;
+  } else { // UART-1
+     GPIO_REG(GLBL_CFG)        |= IOF0_UART1_RST;
+     GPIO_REG(GPIO_MULTI_FUNC) |= IOF0_UART1_ENB;
+  }
 
-  UART_REG(UART_REG_CTRL) |= UART_TXEN;
-  UART_REG(UART_REG_CTRL) |= UART_RXEN;
+  UART_REG(base,UART_REG_CTRL) |= UART_TXEN;
+  UART_REG(base,UART_REG_CTRL) |= UART_RXEN;
 
   sio_setbaud(bauds);
 }
@@ -112,8 +124,8 @@ UARTClass::end(void)
 {
   GPIO_REG(GPIO_MULTI_FUNC)    &= ~IOF0_UART0_ENB;
 
-  UART_REG(UART_REG_CTRL) &= ~UART_TXEN;
-  UART_REG(UART_REG_CTRL) &= ~UART_RXEN;
+  UART_REG(base,UART_REG_CTRL) &= ~UART_TXEN;
+  UART_REG(base,UART_REG_CTRL) &= ~UART_RXEN;
 
 }
 
@@ -131,7 +143,7 @@ int
 UARTClass::availableForWrite(void)
 {
   int busy;
-  busy = (((int32_t)UART_REG(UART_REG_STATUS) & 0x1) == 0x1);
+  busy = (((int32_t)UART_REG(base,UART_REG_STATUS) & 0x1) == 0x1);
   return (!busy);
 }
 

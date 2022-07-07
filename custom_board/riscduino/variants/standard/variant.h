@@ -28,6 +28,7 @@
 
 #ifdef __cplusplus
 extern UARTClass Serial;
+extern UARTClass Serial1;
 #endif
 
 /*
@@ -38,8 +39,8 @@ extern UARTClass Serial;
 #define SPI_REG(x) SPI1_REG(x)
 
 #define UART_INTERFACES_COUNT 1
-#define UART_REG(x) UART0_REG(x)
-#define UART_REGP(i) _REG32P(UART0_BASE_ADDR, (i))
+//#define UART_REG(x) UART0_REG(x)
+#define UART_REGP(base,i) _REG32P(base, (i))
 
 // we only want to enable 3 peripheral managed SPI pins: SCK, MOSI, MISO
 // CS pins can either be handled by hardware or bit banged as GPIOs
