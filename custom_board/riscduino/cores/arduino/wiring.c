@@ -108,8 +108,8 @@ micros(void)
 }
 
 
-void
-delay(uint32_t dwMs)
+
+void delay(uint32_t dwMs)
 {
   uint64_t current, later;
   rdmcycle(&current);
@@ -130,3 +130,4 @@ delay(uint32_t dwMs)
       }
     }
 }
+

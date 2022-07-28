@@ -56,26 +56,27 @@ static const uint8_t SCK  = PIN_SPI1_SCK;
 static const uint32_t SPI_IOF_MASK = (1 << IOF_SPI1_SCK) | (1 << IOF_SPI1_MOSI) | (1 << IOF_SPI1_MISO);
 static const uint32_t IOF_UART_MASK = IOF0_UART0_MASK;
 
-#define VARIANT_DIGITAL_PIN_MAP  {{.io_port = 0, .bit_pos = 16, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
+#define VARIANT_DIGITAL_PIN_MAP  { \
+    {.io_port = 0, .bit_pos = 24, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
+	{.io_port = 0, .bit_pos = 25, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
+	{.io_port = 0, .bit_pos = 26, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
+	{.io_port = 0, .bit_pos = 27, .pwm_num = 1,   .pwm_cmp_num = 1}, \
+	{.io_port = 0, .bit_pos = 28, .pwm_num = 1,   .pwm_cmp_num = 0}, \
+	{.io_port = 0, .bit_pos = 29, .pwm_num = 1,   .pwm_cmp_num = 2}, \
+	{.io_port = 0, .bit_pos = 30, .pwm_num = 1,   .pwm_cmp_num = 3}, \
+	{.io_port = 0, .bit_pos = 31, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
+	{.io_port = 0, .bit_pos = 8,  .pwm_num = 0,   .pwm_cmp_num = 0}, \
+	{.io_port = 0, .bit_pos = 9,  .pwm_num = 0,   .pwm_cmp_num = 1}, \
+	{.io_port = 0, .bit_pos = 10, .pwm_num = 0,   .pwm_cmp_num = 2}, \
+	{.io_port = 0, .bit_pos = 11, .pwm_num = 0,   .pwm_cmp_num = 3}, \
+	{.io_port = 0, .bit_pos = 12, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
+	{.io_port = 0, .bit_pos = 13, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
+	{.io_port = 0, .bit_pos = 16, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
 	{.io_port = 0, .bit_pos = 17, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 18, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 19, .pwm_num = 1,  .pwm_cmp_num = 1}, \
-	{.io_port = 0, .bit_pos = 20, .pwm_num = 1,  .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 21, .pwm_num = 1,  .pwm_cmp_num = 2}, \
-	{.io_port = 0, .bit_pos = 22, .pwm_num = 1,  .pwm_cmp_num = 3}, \
-	{.io_port = 0, .bit_pos = 23, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 0,  .pwm_num = 0,  .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 1,  .pwm_num = 0,  .pwm_cmp_num = 1}, \
-	{.io_port = 0, .bit_pos = 2,  .pwm_num = 0,  .pwm_cmp_num = 2}, \
-	{.io_port = 0, .bit_pos = 3,  .pwm_num = 0, .pwm_cmp_num  = 3}, \
-	{.io_port = 0, .bit_pos = 4,  .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 5,  .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 8,  .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 9,  .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 10, .pwm_num = 2,   .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 11, .pwm_num = 2,   .pwm_cmp_num = 1}, \
-	{.io_port = 0, .bit_pos = 12, .pwm_num = 2,   .pwm_cmp_num = 2}, \
-	{.io_port = 0, .bit_pos = 13, .pwm_num = 2,   .pwm_cmp_num = 3}}
+	{.io_port = 0, .bit_pos = 18, .pwm_num = 2,   .pwm_cmp_num = 0}, \
+	{.io_port = 0, .bit_pos = 19, .pwm_num = 2,   .pwm_cmp_num = 1}, \
+	{.io_port = 0, .bit_pos = 20, .pwm_num = 2,   .pwm_cmp_num = 2}, \
+	{.io_port = 0, .bit_pos = 21, .pwm_num = 2,   .pwm_cmp_num = 3}}
 
 #define VARIANT_NUM_PIN (20)
 

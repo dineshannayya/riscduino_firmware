@@ -17,19 +17,14 @@ pinMode(uint32_t pin, uint32_t mode)
   
   switch (mode) {
   case INPUT_PULLUP:
-    GPIO_REG(GPIO_INPUT_EN)  |=  digitalPinToBitMask(pin);
-    GPIO_REG(GPIO_OUTPUT_EN) &= ~digitalPinToBitMask(pin);
-    GPIO_REG(GPIO_PULLUP_EN) |=  digitalPinToBitMask(pin);
+    GPIO_REG(GPIO_DSEL)      &= digitalPinToBitMask(pin);
     break;
   case INPUT:
-    GPIO_REG(GPIO_INPUT_EN)  |=  digitalPinToBitMask(pin);
-    GPIO_REG(GPIO_OUTPUT_EN) &= ~digitalPinToBitMask(pin);
-    GPIO_REG(GPIO_PULLUP_EN) &= ~digitalPinToBitMask(pin);
+    GPIO_REG(GPIO_DSEL)      &= digitalPinToBitMask(pin);
     break;
   case OUTPUT:
-    GPIO_REG(GPIO_INPUT_EN)  &= ~digitalPinToBitMask(pin);
-    GPIO_REG(GPIO_OUTPUT_EN) |=  digitalPinToBitMask(pin);
-    GPIO_REG(GPIO_PULLUP_EN) &= ~digitalPinToBitMask(pin);
+    //GPIO_REG(GPIO_TYPE)      & ~digitalPinToBitMask(pin);
+    GPIO_REG(GPIO_DSEL)      |= digitalPinToBitMask(pin);
     break;
   }
 }
@@ -42,9 +37,9 @@ digitalWrite(uint32_t pin, uint32_t val)
     return;
   
   if (val)
-    GPIO_REG(GPIO_OUTPUT_VAL) |=  digitalPinToBitMask(pin);
+    GPIO_REG(GPIO_ODATA) |=  digitalPinToBitMask(pin);
   else
-    GPIO_REG(GPIO_OUTPUT_VAL) &= ~digitalPinToBitMask(pin);
+    GPIO_REG(GPIO_ODATA) &= ~digitalPinToBitMask(pin);
 
 }
 
@@ -54,7 +49,7 @@ digitalRead(uint32_t pin)
 if (pin >= variant_pin_map_size)
   return 0;
 
- return ((GPIO_REG(GPIO_INPUT_VAL) & digitalPinToBitMask(pin)) != 0);
+ return ((GPIO_REG(GPIO_IDATA) & digitalPinToBitMask(pin)) != 0);
 }
 
 __END_DECLS
