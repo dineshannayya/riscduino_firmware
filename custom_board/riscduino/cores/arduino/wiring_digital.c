@@ -11,10 +11,6 @@ pinMode(uint32_t pin, uint32_t mode)
   if (pin >= variant_pin_map_size)
     return;
   
-  GPIO_REG(GPIO_OUTPUT_XOR)  &= ~digitalPinToBitMask(pin);
-  GPIO_REG(GPIO_IOF_EN)      &= ~digitalPinToBitMask(pin);
-//pwm_enabled_pin[pin] = 0;
-  
   switch (mode) {
   case INPUT_PULLUP:
     GPIO_REG(GPIO_DSEL)      &= digitalPinToBitMask(pin);

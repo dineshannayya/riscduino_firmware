@@ -77,7 +77,7 @@ private:
         uint8_t   csid;    // csid = index of chip select aka slave select pin, valid values are 0,1,2,3
         uint16_t  csdef;   // inactive state of chip select pins (high or low)
         uint8_t   csmode;  // chip select mode (0 = auto, 1 = CS toggles with frame)
-        BitOrder  border;  // bit ordering : 0 = LSB first, 1 = MSB first (common case)
+        BitOrder  border;  // bit ordering : 1 = LSB first, 0 = MSB first (common case)
 
         // to read/write data over SPI interface, use next two FIFO ports 
         //   txdata = when read, bit 31 signals full.  write data to xmit
@@ -103,6 +103,7 @@ class SPIClass {
 
 	// Transfer functions where the user controls the SS line
 	byte transfer(uint8_t _data, SPITransferMode _mode = SPI_LAST);
+	byte write_transfer(uint8_t _data, SPITransferMode _mode = SPI_LAST);
 	void transfer(void *_buf, size_t _count, SPITransferMode _mode = SPI_LAST);
 
 	// Transaction Functions

@@ -19,27 +19,17 @@ SPIClass::SPIClass(uint32_t _id) :
 
 void SPIClass::begin() {
   
-  GPIO_REG(GPIO_IOF_SEL) &= ~SPI_IOF_MASK;
-  GPIO_REG(GPIO_IOF_EN)  |= SPI_IOF_MASK;
+  GPIO_REG(GPIO_MULTI_FUNC)  |= SPI_IOF_MASK;
+  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(SPI_CLOCK_DIV4) | SPI_CTRL_MODE (SPI_MODE2) | SPI_CTRL_BIT_ENDIAN(SPI_ENDIAN_BIG);
 
-  //setClockDivider(F_CPU/1000000);
-  setDataMode(SPI_MODE0);
-  setBitOrder(MSBFIRST);
-  
 }
 
 // specifies chip select pin to attach to hardware SPI interface
 void SPIClass::begin(uint8_t _pin) {
   	
-        // enable CS pin for selected channel/pin
-        uint32_t iof_mask = digitalPinToBitMask(_pin);
-        GPIO_REG(GPIO_IOF_SEL)  &= ~iof_mask;
-        GPIO_REG(GPIO_IOF_EN)   |=  iof_mask;
-
-	// Default speed set to ~1Mhz
-	//setClockDivider(_pin, F_CPU/1000000);
-	setDataMode(_pin, SPI_MODE0);
-	setBitOrder(_pin, MSBFIRST);
+  // enable CS pin for selected channel/pin
+  uint32_t iof_mask = digitalPinToBitMask(_pin);
+  GPIO_REG(GPIO_DSEL)   |=  iof_mask;
 
 	this->begin();
 
@@ -54,17 +44,8 @@ void SPIClass::beginTransaction(SPISettings settings)
 {
   // before starting a transaction, set SPI peripheral to desired mode
 
-  SPI_REG(SPI_REG_FMT) = SPI_FMT_PROTO(SPI_PROTO_S) |
-    SPI_FMT_ENDIAN((settings.border == LSBFIRST) ? SPI_ENDIAN_LSB : SPI_ENDIAN_MSB) |
-    SPI_FMT_DIR(SPI_DIR_RX) |
-    SPI_FMT_LEN(8);
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP(SPI_DIR_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(settings.sckdiv) | SPI_CTRL_MODE (settings.sckmode);
   
-  SPI_REG(SPI_REG_SCKDIV)  = settings.sckdiv;
-
-  SPI_REG(SPI_REG_SCKMODE) = settings.sckmode;
-
-  // We Don't control CS, so this setting doesn't matter.
-  //SPI_REG(SPI_REG_CSDEF)   = 0xFFFF;
 
 }
 
@@ -73,77 +54,70 @@ void SPIClass::beginTransaction(SPISettings settings)
 void SPIClass::beginTransaction(uint8_t pin, SPISettings settings)
 {
   
-  // before starting a transaction, set SPI peripheral to desired mode
-  SPI_REG(SPI_REG_CSID)   = SS_PIN_TO_CS_ID(pin); 
-  SPI_REG(SPI_REG_CSMODE) = SPI_CSMODE_HOLD;
-
-  // There is no way here to change the CS polarity.
-  SPI_REG(SPI_REG_CSDEF)   = 0xFFFF;
-
   this->beginTransaction(settings);
 
 }
 
 void SPIClass::endTransaction(void) {
-  SPI_REG(SPI_REG_CSMODE) = SPI_CSMODE_AUTO;
 }
 
 void SPIClass::end(uint8_t _pin) {
-  GPIO_REG(GPIO_IOF_EN)  &= ~digitalPinToBitMask(_pin);    
+  uint32_t iof_mask = digitalPinToBitMask(_pin);
+  GPIO_REG(GPIO_DSEL)   &=  ~iof_mask;
+  GPIO_REG(GPIO_MULTI_FUNC)  &= ~SPI_IOF_MASK;
 }
 
 void SPIClass::end() {
-  GPIO_REG(GPIO_IOF_EN)  &= ~SPI_IOF_MASK;
+  GPIO_REG(GPIO_MULTI_FUNC)  &= ~SPI_IOF_MASK;
 }
 
 void SPIClass::setBitOrder(BitOrder _bitOrder) {
-  SPI_REG(SPI_REG_FMT) = SPI_FMT_PROTO(SPI_PROTO_S) |
-    SPI_FMT_ENDIAN((_bitOrder == LSBFIRST) ? SPI_ENDIAN_LSB : SPI_ENDIAN_MSB) |
-    SPI_FMT_DIR(SPI_DIR_RX) |
-    SPI_FMT_LEN(8);
 }
 
 void SPIClass::setBitOrder(uint8_t _pin, BitOrder _bitOrder) {
-	uint32_t ch = SS_PIN_TO_CS_ID(_pin);
-	bitOrder[ch] = _bitOrder;
-	// This gets used later?
 }
 
 void SPIClass::setDataMode(uint8_t _mode) {
-  SPI_REG(SPI_REG_SCKMODE) = _mode;
 }
 
 void SPIClass::setDataMode(uint8_t _pin, uint8_t _mode) {
-	uint32_t ch = SS_PIN_TO_CS_ID(_pin);
-	mode[ch] = _mode;
-	// This gets used later?
 }
 
 void SPIClass::setClockDivider(uint8_t _divider) {
-  SPI_REG(SPI_REG_SCKDIV) = _divider;
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_SCK(_divider);
 }
 
 void SPIClass::setClockDivider(uint8_t _pin, uint8_t _divider) {
-  uint32_t ch = SS_PIN_TO_CS_ID(_pin);
-  divider[ch] = _divider;
 }
 
 
 byte SPIClass::transfer(uint8_t _data, SPITransferMode _mode) {
 
-  // SPI_Write(spi, _channel, _data);
-  while (SPI_REG(SPI_REG_TXFIFO) & SPI_TXFIFO_FULL) ;
-  SPI_REG(SPI_REG_TXFIFO) = _data;
-  
-  // return SPI_Read(spi);
+  // Wait for HW REQ=0
   volatile int32_t x;
-  while ((x = SPI_REG(SPI_REG_RXFIFO)) & SPI_RXFIFO_EMPTY);
-  return x & 0xFF;
+  while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
+  SPI_REG(SPI_REG_WDATA) = _data;
   
-  if (_mode == SPI_LAST) {
-    SPI_REG(SPI_REG_CSMODE) = SPI_CSMODE_AUTO;
-  }
+  SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_TSIZE(3) ; // Reset Transfer Size
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0);  // Set to Write+RD Mode & Transfer Size: 1 Byte & Request 
+
   
+  while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
+  // return SPI_Read(spi);
+  x = SPI_REG(SPI_REG_RDATA);
+  
+}
+
+byte SPIClass::write_transfer(uint8_t _data, SPITransferMode _mode) {
+
+  // Wait for HW REQ=0
+  volatile int32_t x;
+  while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
+  SPI_REG(SPI_REG_WDATA) = _data;
+  
+  SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_OP(3) ;    // Reset the Type
+  SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_TSIZE(3) ; // Reset Transfer Size
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP(SPI_DIR_TX) | SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0);  // Set to Write Mode & Transfer Size: 1 Byte & Request 
 }
 
 byte SPIClass::transfer(byte _pin, uint8_t _data, SPITransferMode _mode) {
@@ -171,6 +145,7 @@ uint16_t SPIClass::transfer16(byte _pin, uint16_t _data, SPITransferMode _mode) 
 	return t.val;
 }
 
+// Need Update - Dinesh-A
 void SPIClass::transfer(byte _pin, void *_buf, size_t _count, SPITransferMode _mode) {
   
   if (_count == 0)
@@ -182,9 +157,6 @@ void SPIClass::transfer(byte _pin, void *_buf, size_t _count, SPITransferMode _m
     return;
   }
 
-  // Send the first byte
-  while (SPI_REG(SPI_REG_TXFIFO) < 0) ;
-  SPI_REG(SPI_REG_TXFIFO) = *buffer;
 
   volatile int32_t x;
   uint8_t r,d;
@@ -192,11 +164,7 @@ void SPIClass::transfer(byte _pin, void *_buf, size_t _count, SPITransferMode _m
     // Prepare next byte
     d = *(buffer+1);
     // Read transferred byte and send next one straight away
-    while ((x = (SPI_REG(SPI_REG_RXFIFO)) & SPI_RXFIFO_EMPTY))
-      ;
     r = x & 0xFF;
-    while (SPI_REG(SPI_REG_TXFIFO) & SPI_TXFIFO_FULL);
-    SPI_REG(SPI_REG_TXFIFO) = d;
 
 		// Save read byte
 		*buffer = r;
@@ -204,9 +172,6 @@ void SPIClass::transfer(byte _pin, void *_buf, size_t _count, SPITransferMode _m
 		_count--;
 	}
 
-	// Receive the last transferred byte
-  while ((x = (SPI_REG(SPI_REG_RXFIFO)) & SPI_RXFIFO_EMPTY))
-    ;
   r = x & 0xFF;
   *buffer = r;
 }
