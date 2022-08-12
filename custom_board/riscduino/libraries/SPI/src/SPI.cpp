@@ -128,6 +128,7 @@ byte SPIClass::transfer(byte _pin, uint8_t _data, SPITransferMode _mode) {
  
 }
 
+// Transfer 16 bit
 uint16_t SPIClass::transfer16(byte _pin, uint16_t _data, SPITransferMode _mode) {
 	union { uint16_t val; struct { uint8_t lsb; uint8_t msb; }; } t;
 	uint32_t ch = SS_PIN_TO_CS_ID(_pin);
@@ -141,6 +142,18 @@ uint16_t SPIClass::transfer16(byte _pin, uint16_t _data, SPITransferMode _mode) 
 		t.msb = transfer(_pin, t.msb, SPI_CONTINUE);
 		t.lsb = transfer(_pin, t.lsb, _mode);
 	}
+
+	return t.val;
+}
+
+// 16 bit transfer, assumed LSB first - Need to cross-check DineshA
+uint16_t SPIClass::transfer16(uint16_t _data, SPITransferMode _mode) {
+	union { uint16_t val; struct { uint8_t lsb; uint8_t msb; }; } t;
+
+	t.val = _data;
+
+    t.lsb = transfer(t.lsb, SPI_CONTINUE);
+	t.msb = transfer(t.msb, _mode);
 
 	return t.val;
 }

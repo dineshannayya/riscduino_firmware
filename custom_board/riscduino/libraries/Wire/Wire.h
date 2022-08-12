@@ -17,19 +17,19 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
   Modified 2012 by Todd Krein (todd@krein.org) to implement repeated starts
+  Modified 2020 by Greyson Christoforo (grey@christoforo.net) to implement timeouts
 */
 
 #ifndef TwoWire_h
 #define TwoWire_h
 
-#warning "Wire.h Is currently only a stub and is not functional. A SW I2C Library should be used (this will be added in the near future)."
-
 #include <inttypes.h>
-#include "Arduino.h"
+#include "Stream.h"
 
 #define BUFFER_LENGTH 32
 
-extern "C" void i2c0_isr(void);
+// WIRE_HAS_END means Wire has end()
+#define WIRE_HAS_END 1
 
 class TwoWire : public Stream
 {
@@ -44,24 +44,27 @@ class TwoWire : public Stream
     static uint8_t txBufferLength;
 
     static uint8_t transmitting;
-    static void onRequestService(void);
-    static void onReceiveService(uint8_t*, int);
     static void (*user_onRequest)(void);
     static void (*user_onReceive)(int);
-    static void sda_rising_isr(void);
-    friend void i2c0_isr(void);
+    static void onRequestService(void);
+    static void onReceiveService(uint8_t*, int);
   public:
     TwoWire();
     void begin();
     void begin(uint8_t);
     void begin(int);
+    void end();
     void setClock(uint32_t);
+    void setWireTimeout(uint32_t timeout = 25000, bool reset_with_timeout = false);
+    bool getWireTimeoutFlag(void);
+    void clearWireTimeoutFlag(void);
     void beginTransmission(uint8_t);
     void beginTransmission(int);
     uint8_t endTransmission(void);
     uint8_t endTransmission(uint8_t);
     uint8_t requestFrom(uint8_t, uint8_t);
     uint8_t requestFrom(uint8_t, uint8_t, uint8_t);
+    uint8_t requestFrom(uint8_t, uint8_t, uint32_t, uint8_t, uint8_t);
     uint8_t requestFrom(int, int);
     uint8_t requestFrom(int, int, int);
     virtual size_t write(uint8_t);
@@ -69,10 +72,10 @@ class TwoWire : public Stream
     virtual int available(void);
     virtual int read(void);
     virtual int peek(void);
-	virtual void flush(void);
+    virtual void flush(void);
     void onReceive( void (*)(int) );
     void onRequest( void (*)(void) );
-  
+
     inline size_t write(unsigned long n) { return write((uint8_t)n); }
     inline size_t write(long n) { return write((uint8_t)n); }
     inline size_t write(unsigned int n) { return write((uint8_t)n); }

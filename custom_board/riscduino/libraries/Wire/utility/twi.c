@@ -23,19 +23,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <inttypes.h>
-#include <avr/io.h>
-#include <avr/interrupt.h>
 #include <compat/twi.h>
-#include "Arduino.h" // for digitalWrite
 
-
-#ifndef cbi
-#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-
-#ifndef sbi
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
 
 #include "pins_arduino.h"
 #include "twi.h"
@@ -59,6 +48,8 @@ static volatile uint8_t twi_txBufferLength;
 static uint8_t twi_rxBuffer[TWI_BUFFER_LENGTH];
 static volatile uint8_t twi_rxBufferIndex;
 
+static volatile uint16_t twi_frequency;
+static volatile uint8_t  twi_slave_addr;
 static volatile uint8_t twi_error;
 
 /* 
@@ -71,17 +62,16 @@ void twi_init(void)
 {
   // initialize state
   twi_state = TWI_READY;
-  twi_sendStop = true;		// default value
-  twi_inRepStart = false;
+  WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_STOP(1) ;
   
   // activate internal pullups for twi.
-  digitalWrite(SDA, 1);
-  digitalWrite(SCL, 1);
+  //digitalWrite(SDA, 1);
+  //digitalWrite(SCL, 1);
 
   // initialize twi prescaler and bit rate
-  cbi(TWSR, TWPS0);
-  cbi(TWSR, TWPS1);
-  TWBR = ((F_CPU / TWI_FREQ) - 16) / 2;
+  twi_frequency = ((F_CPU / TWI_FREQ) - 16) / 2;
+  WIRE_REG(WIRE_REG_BITRATE_L) = twi_frequency & 0xFF;
+  WIRE_REG(WIRE_REG_BITRATE_H) = (twi_frequency >> 8) & 0xFF
 
   /* twi bit rate formula from atmega128 manual pg 204
   SCL Frequency = CPU Clock Frequency / (16 + (2 * TWBR))
@@ -89,7 +79,7 @@ void twi_init(void)
   It is 72 for a 16mhz Wiring board with 100kHz TWI */
 
   // enable twi module, acks, and twi interrupt
-  TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA);
+  WIRE_REG(WIRE_REG_CMD) = WIRE_CMD_ENB(1) | WIRE_CMD_ENB(1);
 }
 
 /* 
@@ -100,8 +90,8 @@ void twi_init(void)
  */
 void twi_setAddress(uint8_t address)
 {
-  // set twi slave address (skip over TWGCE bit)
-  TWAR = address << 1;
+  // set twi slave address (skip over Bit[0])
+  twi_slave_addr = address << 1;
 }
 
 /* 
@@ -117,6 +107,7 @@ void twi_setAddress(uint8_t address)
 uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sendStop)
 {
   uint8_t i;
+  volatile int8_t x;
 
   // ensure data will fit into buffer
   if(TWI_BUFFER_LENGTH < length){
@@ -142,8 +133,7 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
   // expected byte of data.
 
   // build sla+w, slave device address + w bit
-  twi_slarw = TW_READ;
-  twi_slarw |= address << 1;
+  twi_slarw = address << 1;
 
   if (true == twi_inRepStart) {
     // if we're in the repeated start state, then we've already sent the start,
@@ -153,15 +143,15 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
     // up. Also, don't enable the START interrupt. There may be one pending from the 
     // repeated start that we sent outselves, and that would really confuse things.
     twi_inRepStart = false;			// remember, we're dealing with an ASYNC ISR
-    TWDR = twi_slarw;
-    TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE);	// enable INTs, but not START
+    WIRE_REG(WIRE_REG_CMD)  = twi_slarw;
+    WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_RD(1);
   }
   else
     // send start condition
-    TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA) | _BV(TWINT) | _BV(TWSTA);
+    WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_START(1) | WIRE_CTRL_RD(1);
 
   // wait for read operation to complete
-  while(TWI_MRX == twi_state){
+  while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_BUSY(1)) {
     continue;
   }
 
@@ -194,6 +184,7 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
 uint8_t twi_writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait, uint8_t sendStop)
 {
   uint8_t i;
+  volatile int8_t x;
 
   // ensure data will fit into buffer
   if(TWI_BUFFER_LENGTH < length){
@@ -219,8 +210,7 @@ uint8_t twi_writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait
   }
   
   // build sla+w, slave device address + w bit
-  twi_slarw = TW_WRITE;
-  twi_slarw |= address << 1;
+  twi_slarw = address << 1;
   
   // if we're in a repeated start, then we've already sent the START
   // in the ISR. Don't do it again.
@@ -233,15 +223,14 @@ uint8_t twi_writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait
     // up. Also, don't enable the START interrupt. There may be one pending from the 
     // repeated start that we sent outselves, and that would really confuse things.
     twi_inRepStart = false;			// remember, we're dealing with an ASYNC ISR
-    TWDR = twi_slarw;				
-    TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE);	// enable INTs, but not START
+    WIRE_REG(WIRE_REG_CMD)  = twi_slarw;
+    WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_WR(1);
   }
   else
     // send start condition
-    TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE) | _BV(TWSTA);	// enable INTs
+    WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_START(1) | WIRE_CTRL_RD(1);
 
-  // wait for write operation to complete
-  while(wait && (TWI_MTX == twi_state)){
+  while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_BUSY(1)) {
     continue;
   }
   
@@ -320,9 +309,9 @@ void twi_reply(uint8_t ack)
 {
   // transmit master read ready signal, with or without ack
   if(ack){
-    TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWINT) | _BV(TWEA);
+    WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_ACK(1);
   }else{
-	  TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWINT);
+    WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_ACK(0);
   }
 }
 
@@ -334,12 +323,13 @@ void twi_reply(uint8_t ack)
  */
 void twi_stop(void)
 {
+  volatile int8_t x;
   // send stop condition
-  TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA) | _BV(TWINT) | _BV(TWSTO);
+  WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_STOP(1);
 
   // wait for stop condition to be exectued on bus
   // TWINT is not set after a stop condition!
-  while(TWCR & _BV(TWSTO)){
+  while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_BUSY(1)) {
     continue;
   }
 
@@ -356,7 +346,7 @@ void twi_stop(void)
 void twi_releaseBus(void)
 {
   // release bus
-  TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA) | _BV(TWINT);
+  WIRE_REG(WIRE_REG_CMD) = WIRE_CMD_ENB(0) | WIRE_CMD_IEN(0);
 
   // update twi state
   twi_state = TWI_READY;
@@ -369,7 +359,7 @@ SIGNAL(TWI_vect)
     case TW_START:     // sent start condition
     case TW_REP_START: // sent repeated start condition
       // copy device address and r/w bit to output register and ack
-      TWDR = twi_slarw;
+      WIRE_REG(WIRE_REG_WDATA) = twi_slarw;
       twi_reply(1);
       break;
 
@@ -379,7 +369,7 @@ SIGNAL(TWI_vect)
       // if there is data to send, send it, otherwise stop 
       if(twi_masterBufferIndex < twi_masterBufferLength){
         // copy data to output register and ack
-        TWDR = twi_masterBuffer[twi_masterBufferIndex++];
+        WIRE_REG(WIRE_REG_WDATA) = twi_masterBuffer[twi_masterBufferIndex++];
         twi_reply(1);
       }else{
 	if (twi_sendStop)
@@ -389,7 +379,7 @@ SIGNAL(TWI_vect)
 	  // don't enable the interrupt. We'll generate the start, but we 
 	  // avoid handling the interrupt until we're in the next transaction,
 	  // at the point where we would normally issue the start.
-	  TWCR = _BV(TWINT) | _BV(TWSTA)| _BV(TWEN) ;
+	  WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_START(1);
 	  twi_state = TWI_READY;
 	}
       }
@@ -410,7 +400,7 @@ SIGNAL(TWI_vect)
     // Master Receiver
     case TW_MR_DATA_ACK: // data received, ack sent
       // put byte into buffer
-      twi_masterBuffer[twi_masterBufferIndex++] = TWDR;
+      twi_masterBuffer[twi_masterBufferIndex++] = WIRE_REG(WIRE_REG_RDATA);
     case TW_MR_SLA_ACK:  // address sent, ack received
       // ack if more bytes are expected, otherwise nack
       if(twi_masterBufferIndex < twi_masterBufferLength){
@@ -421,7 +411,7 @@ SIGNAL(TWI_vect)
       break;
     case TW_MR_DATA_NACK: // data received, nack sent
       // put final byte into buffer
-      twi_masterBuffer[twi_masterBufferIndex++] = TWDR;
+      twi_masterBuffer[twi_masterBufferIndex++] = WIRE_REG(WIRE_REG_RDATA);
 	if (twi_sendStop)
           twi_stop();
 	else {
@@ -429,7 +419,7 @@ SIGNAL(TWI_vect)
 	  // don't enable the interrupt. We'll generate the start, but we 
 	  // avoid handling the interrupt until we're in the next transaction,
 	  // at the point where we would normally issue the start.
-	  TWCR = _BV(TWINT) | _BV(TWSTA)| _BV(TWEN) ;
+	  WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_START(1);
 	  twi_state = TWI_READY;
 	}    
 	break;
