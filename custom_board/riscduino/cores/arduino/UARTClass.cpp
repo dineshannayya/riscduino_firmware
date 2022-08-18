@@ -105,11 +105,11 @@ void
 UARTClass::begin(unsigned long bauds)
 {
   if(id == 0) { // UART-0
-     GPIO_REG(GLBL_CFG)        |= IOF0_UART0_RST;
-     GPIO_REG(GPIO_MULTI_FUNC) |= IOF0_UART0_ENB;
+     GLBL_REG(GLBL_CFG0)        |= IOF0_UART0_RST;
+     GLBL_REG(GLBL_MULTI_FUNC) |= IOF0_UART0_ENB;
   } else { // UART-1
-     GPIO_REG(GLBL_CFG)        |= IOF0_UART1_RST;
-     GPIO_REG(GPIO_MULTI_FUNC) |= IOF0_UART1_ENB;
+     GLBL_REG(GLBL_CFG0)        |= IOF0_UART1_RST;
+     GLBL_REG(GLBL_MULTI_FUNC) |= IOF0_UART1_ENB;
   }
 
   UART_REG(base,UART_REG_CTRL) |= UART_TXEN;
@@ -122,7 +122,7 @@ UARTClass::begin(unsigned long bauds)
 void
 UARTClass::end(void)
 {
-  GPIO_REG(GPIO_MULTI_FUNC)    &= ~IOF0_UART0_ENB;
+  GLBL_REG(GLBL_MULTI_FUNC)    &= ~IOF0_UART0_ENB;
 
   UART_REG(base,UART_REG_CTRL) &= ~UART_TXEN;
   UART_REG(base,UART_REG_CTRL) &= ~UART_RXEN;

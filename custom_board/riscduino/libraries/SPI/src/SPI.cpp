@@ -19,7 +19,7 @@ SPIClass::SPIClass(uint32_t _id) :
 
 void SPIClass::begin() {
   
-  GPIO_REG(GPIO_MULTI_FUNC)  |= SPI_IOF_MASK;
+  GLBL_REG(GLBL_MULTI_FUNC)  |= SPI_IOF_MASK;
   SPI_REG(SPI_REG_CTRL) = SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(SPI_CLOCK_DIV4) | SPI_CTRL_MODE (SPI_MODE2) | SPI_CTRL_BIT_ENDIAN(SPI_ENDIAN_BIG);
 
 }
@@ -64,11 +64,11 @@ void SPIClass::endTransaction(void) {
 void SPIClass::end(uint8_t _pin) {
   uint32_t iof_mask = digitalPinToBitMask(_pin);
   GPIO_REG(GPIO_DSEL)   &=  ~iof_mask;
-  GPIO_REG(GPIO_MULTI_FUNC)  &= ~SPI_IOF_MASK;
+  GLBL_REG(GLBL_MULTI_FUNC)  &= ~SPI_IOF_MASK;
 }
 
 void SPIClass::end() {
-  GPIO_REG(GPIO_MULTI_FUNC)  &= ~SPI_IOF_MASK;
+  GLBL_REG(GLBL_MULTI_FUNC)  &= ~SPI_IOF_MASK;
 }
 
 void SPIClass::setBitOrder(BitOrder _bitOrder) {
