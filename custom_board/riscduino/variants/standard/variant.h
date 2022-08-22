@@ -76,9 +76,12 @@ static const uint32_t IOF_UART_MASK = IOF0_UART0_MASK;
 	{.io_port = 0, .bit_pos = 18, .pwm_num = 2,   .pwm_cmp_num = 0}, \
 	{.io_port = 0, .bit_pos = 19, .pwm_num = 2,   .pwm_cmp_num = 1}, \
 	{.io_port = 0, .bit_pos = 20, .pwm_num = 2,   .pwm_cmp_num = 2}, \
-	{.io_port = 0, .bit_pos = 21, .pwm_num = 2,   .pwm_cmp_num = 3}}
+	{.io_port = 0, .bit_pos = 21, .pwm_num = 2,   .pwm_cmp_num = 2}, \
+	{.io_port = 0, .bit_pos = 14, .pwm_num = 2,   .pwm_cmp_num = 2}, \
+	{.io_port = 0, .bit_pos = 15, .pwm_num = 2,   .pwm_cmp_num = 2}, \
+	{.io_port = 0, .bit_pos = 22, .pwm_num = 2,   .pwm_cmp_num = 3}}
 
-#define VARIANT_NUM_PIN (20)
+#define VARIANT_NUM_PIN (23)
 
 #define VARIANT_PWM_LIST {(volatile void *) PWM0_BASE_ADDR, \
       (volatile void *) PWM1_BASE_ADDR, \

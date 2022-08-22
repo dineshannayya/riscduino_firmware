@@ -6,8 +6,9 @@
 #define GLBL_CHIP_ID     (0x00)  // CHIP OD
 #define GLBL_CFG0        (0x04)  // Global Config-0
 #define GLBL_CFG1        (0x08)  // Global Config-1
-#define GLBL_INTR_MASK   (0x0C)  // Global Interrupt Mask
+#define GLBL_INTR_ENB    (0x0C)  // Global Interrupt Enable
 #define GLBL_INTR_STAT   (0x10)  // Global Interrupt Status
+#define GLBL_INTR_CLR    (0x10)  // Global Interrupt Clear
 #define GLBL_MULTI_FUNC  (0x14)  // GPIO Multi Function
 #define GLBL_SOFT_REG0   (0x18)  // Software Reg-0
 #define GLBL_SOFT_REG1   (0x1C)  // Software Reg-1

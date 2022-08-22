@@ -42,7 +42,7 @@ void PLIC_init (
                                 PLIC_PRIORITY_OFFSET),
                     (num_sources + 1) << PLIC_PRIORITY_SHIFT_PER_SOURCE);
 
-  // Set the threshold to 0.
+  //// Set the threshold to 0.
   volatile plic_threshold* threshold = (plic_threshold*)
     (this_plic->base_addr +
      PLIC_THRESHOLD_OFFSET +
@@ -75,6 +75,9 @@ void PLIC_enable_interrupt (plic_instance_t * this_plic, plic_source source){
   uint8_t current = *current_ptr;
   current = current | ( 1 << (source & 0x7));
   *current_ptr = current;
+
+ set_csr(CSR_IPIC_IDX, source);
+
 
 }
 

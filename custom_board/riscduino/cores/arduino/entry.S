@@ -7,7 +7,7 @@
 #include "riscduino/bits.h"
 
   .section      .text.entry	
-  .align 2
+  .balign 64
   .global trap_entry
 trap_entry:
   addi sp, sp, -32*REGBYTES

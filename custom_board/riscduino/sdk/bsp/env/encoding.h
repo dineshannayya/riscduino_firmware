@@ -126,6 +126,14 @@
 #define IRQ_COP      12
 #define IRQ_HOST     13
 
+// IPIC Interrupt Constrol Status Register
+#define IPIC_ICSR_IP   (1 << 0)        // interrupt pending
+#define IPIC_ICSR_IE   (1 << 1)        // interrupt enable
+#define IPIC_ICSR_IM   (1 << 2)        // interrupt mode (0/1: level/edge)
+#define IPIC_ICSR_INV  (1 << 3)        // line inversion
+#define IPIC_ICSR_IS   (1 << 4)        // in service
+
+
 #define DEFAULT_RSTVEC     0x00001000
 #define DEFAULT_NMIVEC     0x00001004
 #define DEFAULT_MTVEC      0x00001010
@@ -860,6 +868,17 @@
 #define CSR_MHPMCOUNTER29H 0xb9d
 #define CSR_MHPMCOUNTER30H 0xb9e
 #define CSR_MHPMCOUNTER31H 0xb9f
+
+// IPIC Register
+#define CSR_IPIC_CISV      0xbf0  // Current Interrupt Vector in Service
+#define CSR_IPIC_CICSR     0xbf1  // Current Interrupt Status Register
+#define CSR_IPIC_IPR       0xbf2  // Interrupt Pending Register
+#define CSR_IPIC_ISVR      0xbf3  // Interrupt Serviced Register
+#define CSR_IPIC_EOI       0xbf4  // End of Interrupt
+#define CSR_IPIC_SOI       0xbf5  // Start of Interrup
+#define CSR_IPIC_IDX       0xbf6  // Interrupt Index
+#define CSR_IPIC_ICSR      0xbf7  // Interrupt Control & Status
+
 #define CAUSE_MISALIGNED_FETCH 0x0
 #define CAUSE_FAULT_FETCH 0x1
 #define CAUSE_ILLEGAL_INSTRUCTION 0x2
@@ -1160,6 +1179,7 @@ DECLARE_CSR(mepc, CSR_MEPC)
 DECLARE_CSR(mcause, CSR_MCAUSE)
 DECLARE_CSR(mbadaddr, CSR_MBADADDR)
 DECLARE_CSR(mip, CSR_MIP)
+
 DECLARE_CSR(tselect, CSR_TSELECT)
 DECLARE_CSR(tdata1, CSR_TDATA1)
 DECLARE_CSR(tdata2, CSR_TDATA2)

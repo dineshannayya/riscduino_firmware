@@ -32,7 +32,7 @@ __BEGIN_DECLS
 #define DEFAULT 1
 #define EXTERNAL 0
 
-#define digitalPinToInterrupt(P) (INT_GPIO_BASE + variant_pin_map[P].bit_pos) 
+#define digitalPinToInterrupt(P) (variant_pin_map[P].bit_pos) 
 
   typedef void (*voidFuncPtr)(void);
 
