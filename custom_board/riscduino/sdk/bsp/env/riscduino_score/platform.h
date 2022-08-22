@@ -12,6 +12,7 @@
 #include "riscduino/devices/clint.h"
 #include "riscduino/devices/glbl.h"
 #include "riscduino/devices/gpio.h"
+#include "riscduino/devices/timer.h"
 #include "riscduino/devices/plic.h"
 #include "riscduino/devices/pwm.h"
 #include "riscduino/devices/spi.h"
@@ -88,18 +89,18 @@
 #define IOF1_PWM2_MASK          _AC(0x00003C00, UL)
 
 // Interrupt Numbers
-#define INT_RESERVED 0
-#define INT_WDOGCMP 1
-#define INT_RTCCMP 2
-#define INT_UART0_BASE 3
-#define INT_UART1_BASE 4
-#define INT_SPI0_BASE 5
-#define INT_SPI1_BASE 6
-#define INT_SPI2_BASE 7
-#define INT_GPIO_BASE 8
-#define INT_PWM0_BASE 40
-#define INT_PWM1_BASE 44
-#define INT_PWM2_BASE 48
+#define INT_TIMER_BASE   0
+#define INT_WIRE         2
+#define INT_USB          3
+#define INT_UART0_BASE   3
+#define INT_UART1_BASE   4
+#define INT_SPI0_BASE    5
+#define INT_SPI1_BASE    6
+#define INT_SPI2_BASE    7
+#define INT_GPIO_BASE    8
+#define INT_PWM0_BASE    40
+#define INT_PWM1_BASE    44
+#define INT_PWM2_BASE    48
 
 // Helper functions
 #define _REG32(p, i) (*(volatile uint32_t *) ((p) + (i)))

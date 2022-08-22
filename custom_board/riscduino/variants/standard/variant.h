@@ -18,6 +18,7 @@
 #include "Arduino.h"
 #ifdef __cplusplus
 #include "UARTClass.h"
+#include "TIMERClass.h"
 #endif
 
 
@@ -29,6 +30,7 @@
 #ifdef __cplusplus
 extern UARTClass Serial;
 extern UARTClass Serial1;
+extern TIMERClass Timer;
 #endif
 
 /*

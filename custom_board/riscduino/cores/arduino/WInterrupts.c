@@ -97,6 +97,8 @@ void attachInterrupt(uint32_t intnum, voidFuncPtr callback, uint32_t mode)
 	GLBL_REG(GLBL_INTR_ENB) |= (1 << intnum );
 	break;
       }
+  } else { // Other then GPIO interrupt, config only GLBL
+	  GLBL_REG(GLBL_INTR_ENB) |= (1 << intnum );
   }
   
   //write_csr(CSR_IPIC_IDX, intnum);
@@ -130,6 +132,8 @@ void detachInterrupt(uint32_t intnum)
     GPIO_REG(GPIO_HIGH_IE) &= ~( 1 << intnum );
     GPIO_REG(GPIO_RISE_IE) &= ~( 1 << intnum );
     GPIO_REG(GPIO_FALL_IE) &= ~( 1 << intnum );
+  } else { // Other then GPIO interrupt, config only GLBL
+	  GLBL_REG(GLBL_INTR_ENB) &= ~(1 << intnum );
   }
 
 }
@@ -145,7 +149,7 @@ void handle_m_ext_interrupt(){
   //plic_source intnum  = PLIC_claim_interrupt(&g_plic);
   //plic_source intnum  = read_csr(CSR_IPIC_CISV);
   plic_source intnum  = read_csr(0xbf0);
-  if ((intnum >=1 ) &&
+  if ((intnum >=0 ) &&
       (intnum < PLIC_NUM_INTERRUPTS) &&
       callbacksInt[intnum] != 0) {
     callbacksInt[intnum]();
@@ -157,6 +161,8 @@ void handle_m_ext_interrupt(){
 
   if (intnum >= INT_GPIO_BASE  && intnum < (INT_GPIO_BASE + NUM_GPIO)) {
 	GPIO_REG(GPIO_INTR_CLR)  = (1 << intnum );
+	GLBL_REG(GLBL_INTR_CLR)  = (1 << intnum);
+  } else {
 	GLBL_REG(GLBL_INTR_CLR)  = (1 << intnum);
   }
 
