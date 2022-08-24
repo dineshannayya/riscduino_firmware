@@ -4,7 +4,7 @@
 #define _RISCDUINO_GPIO_H
 
 #define GPIO_DSEL        (0x00)  // GPIO Direction Select
-#define GPIO_TYPE        (0x04)  // GPIO TYPE - Static/Waveform
+#define GPIO_TYPE        (0x04)  // GPIO TYPE - Static/WS281X waveform
 #define GPIO_IDATA       (0x08)  // GPIO Data In
 #define GPIO_ODATA       (0x0C)  // GPIO Data Out
 #define GPIO_INTR_STAT   (0x10)  // GPIO Interrupt status

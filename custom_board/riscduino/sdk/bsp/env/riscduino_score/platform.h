@@ -12,6 +12,7 @@
 #include "riscduino/devices/clint.h"
 #include "riscduino/devices/glbl.h"
 #include "riscduino/devices/gpio.h"
+#include "riscduino/devices/ws281x.h"
 #include "riscduino/devices/timer.h"
 #include "riscduino/devices/plic.h"
 #include "riscduino/devices/pwm.h"
@@ -29,6 +30,7 @@
 #define PWM_BASE_ADDR      _AC(0x10020080,UL)
 #define TIMER_BASE_ADDR    _AC(0x100200C0,UL)
 #define SEMA_BASE_ADDR     _AC(0x10020100,UL)
+#define WS281X_BASE_ADDR   _AC(0x10020140,UL)
 #define UART0_BASE_ADDR    _AC(0x10010000,UL)
 #define UART1_BASE_ADDR    _AC(0x10010100,UL)
 #define WIRE_BASE_ADDR     _AC(0x10000040,UL)
@@ -112,6 +114,7 @@
 #define PWM_REG(offset)   _REG32(PWM_BASE_ADDR, offset)
 #define TIMER_REG(offset) _REG32(TIMER_BASE_ADDR, offset)
 #define SEMA_REG(offset)  _REG32(SEMA_BASE_ADDR, offset)
+#define WS281X_REG(offset)_REG32(WS281X_BASE_ADDR, offset)
 #define OTP_REG(offset)   _REG32(OTP_BASE_ADDR, offset)
 #define PLIC_REG(offset)  _REG32(PLIC_BASE_ADDR, offset)
 #define PRCI_REG(offset)  _REG32(PRCI_BASE_ADDR, offset)

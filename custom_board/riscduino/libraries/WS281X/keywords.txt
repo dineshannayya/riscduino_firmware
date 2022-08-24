@@ -1,0 +1,32 @@
+#######################################
+# Syntax Coloring Map WS281X
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+WS281X	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+begin			KEYWORD2
+end				KEYWORD2
+enable		    KEYWORD2
+disable	        KEYWORD2
+fast_write		KEYWORD2
+write	        KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+WS2811_LOW_SPEED		LITERAL1
+WS2811_HIGH_SPEED		LITERAL1
+WS2812_HIGH_SPEED		LITERAL1
+WS2812S_HIGH_SPEED		LITERAL1
+WS2812B_HIGH_SPEED		LITERAL1
+
+SPI_CONTINUE	LITERAL1
+SPI_LAST		LITERAL1

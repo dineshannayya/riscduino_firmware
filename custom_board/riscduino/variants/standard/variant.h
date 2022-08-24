@@ -59,29 +59,29 @@ static const uint32_t SPI_IOF_MASK = 0x400;
 static const uint32_t IOF_UART_MASK = IOF0_UART0_MASK;
 
 #define VARIANT_DIGITAL_PIN_MAP  { \
-    {.io_port = 0, .bit_pos = 24, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 25, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 26, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 27, .pwm_num = 1,   .pwm_cmp_num = 1}, \
-	{.io_port = 0, .bit_pos = 28, .pwm_num = 1,   .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 29, .pwm_num = 1,   .pwm_cmp_num = 2}, \
-	{.io_port = 0, .bit_pos = 30, .pwm_num = 1,   .pwm_cmp_num = 3}, \
-	{.io_port = 0, .bit_pos = 31, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 8,  .pwm_num = 0,   .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 9,  .pwm_num = 0,   .pwm_cmp_num = 1}, \
-	{.io_port = 0, .bit_pos = 10, .pwm_num = 0,   .pwm_cmp_num = 2}, \
-	{.io_port = 0, .bit_pos = 11, .pwm_num = 0,   .pwm_cmp_num = 3}, \
-	{.io_port = 0, .bit_pos = 12, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 13, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 16, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 17, .pwm_num = 0xF, .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 18, .pwm_num = 2,   .pwm_cmp_num = 0}, \
-	{.io_port = 0, .bit_pos = 19, .pwm_num = 2,   .pwm_cmp_num = 1}, \
-	{.io_port = 0, .bit_pos = 20, .pwm_num = 2,   .pwm_cmp_num = 2}, \
-	{.io_port = 0, .bit_pos = 21, .pwm_num = 2,   .pwm_cmp_num = 2}, \
-	{.io_port = 0, .bit_pos = 14, .pwm_num = 2,   .pwm_cmp_num = 2}, \
-	{.io_port = 0, .bit_pos = 15, .pwm_num = 2,   .pwm_cmp_num = 2}, \
-	{.io_port = 0, .bit_pos = 22, .pwm_num = 2,   .pwm_cmp_num = 3}}
+    {.io_port = 0, .bit_pos = 24, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0}, \
+	{.io_port = 0, .bit_pos = 25, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0}, \
+	{.io_port = 0, .bit_pos = 26, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0}, \
+	{.io_port = 0, .bit_pos = 27, .pwm_num = 1,   .pwm_cmp_num = 1, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 28, .pwm_num = 1,   .pwm_cmp_num = 0, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 29, .pwm_num = 1,   .pwm_cmp_num = 2, .ws281x_num = 2}, \
+	{.io_port = 0, .bit_pos = 30, .pwm_num = 1,   .pwm_cmp_num = 3, .ws281x_num = 2}, \
+	{.io_port = 0, .bit_pos = 31, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 2}, \
+	{.io_port = 0, .bit_pos = 8,  .pwm_num = 0,   .pwm_cmp_num = 0, .ws281x_num = 2}, \
+	{.io_port = 0, .bit_pos = 9,  .pwm_num = 0,   .pwm_cmp_num = 1, .ws281x_num = 3}, \
+	{.io_port = 0, .bit_pos = 10, .pwm_num = 0,   .pwm_cmp_num = 2, .ws281x_num = 3}, \
+	{.io_port = 0, .bit_pos = 11, .pwm_num = 0,   .pwm_cmp_num = 3, .ws281x_num = 3}, \
+	{.io_port = 0, .bit_pos = 12, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 3}, \
+	{.io_port = 0, .bit_pos = 13, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 16, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 17, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 18, .pwm_num = 2,   .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 19, .pwm_num = 2,   .pwm_cmp_num = 1, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 20, .pwm_num = 2,   .pwm_cmp_num = 2, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 21, .pwm_num = 2,   .pwm_cmp_num = 2, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 14, .pwm_num = 2,   .pwm_cmp_num = 2, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 15, .pwm_num = 2,   .pwm_cmp_num = 2, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 22, .pwm_num = 2,   .pwm_cmp_num = 3, .ws281x_num = 0}}
 
 #define VARIANT_NUM_PIN (23)
 
@@ -89,6 +89,7 @@ static const uint32_t IOF_UART_MASK = IOF0_UART0_MASK;
       (volatile void *) PWM1_BASE_ADDR, \
       (volatile void *) PWM2_BASE_ADDR}
 
+#define VARIANT_NUM_WS281X (4)
 #define VARIANT_NUM_PWM (3)
 #define VARIANT_NUM_SPI (1)
 // For interfacing with the onboard SPI Flash.

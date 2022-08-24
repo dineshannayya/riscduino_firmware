@@ -33,6 +33,7 @@ struct variant_pin_map_s {
   uint8_t bit_pos;
   uint8_t pwm_num;
   uint8_t pwm_cmp_num;
+  uint8_t ws281x_num; // ws281x_num
 };
 
 extern const struct variant_pin_map_s variant_pin_map[];
