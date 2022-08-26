@@ -33,7 +33,7 @@
 #define WS281X_BASE_ADDR   _AC(0x10020140,UL)
 #define UART0_BASE_ADDR    _AC(0x10010000,UL)
 #define UART1_BASE_ADDR    _AC(0x10010100,UL)
-#define WIRE_BASE_ADDR     _AC(0x10000040,UL)
+#define WIRE_BASE_ADDR     _AC(0x10010040,UL)
 #define SPI0_BASE_ADDR     _AC(0x100100C0,UL)
 
 // Need to Remove It - Dinesh A
@@ -89,6 +89,9 @@
 #define IOF1_PWM0_MASK          _AC(0x0000000F, UL)
 #define IOF1_PWM1_MASK          _AC(0x00780000, UL)
 #define IOF1_PWM2_MASK          _AC(0x00003C00, UL)
+
+#define WIRE_IOF_MASK           _AC(0x00008000, UL)
+
 
 // Interrupt Numbers
 #define INT_TIMER_BASE   0

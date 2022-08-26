@@ -24,12 +24,19 @@
 #define TwoWire_h
 
 #include <inttypes.h>
+#include "platform.h"
 #include "Stream.h"
 
 #define BUFFER_LENGTH 32
 
 // WIRE_HAS_END means Wire has end()
 #define WIRE_HAS_END 1
+
+#define WIRE_SUCESS       0x00
+#define WIRE_ADDR_NACK    0x01
+#define WIRE_DATA_NACK    0x02
+#define WIRE_BUSY         0x03
+#define WIRE_ARB_LOST     0x04 // Arbitartion lost
 
 class TwoWire : public Stream
 {
@@ -42,6 +49,8 @@ class TwoWire : public Stream
     static uint8_t txBuffer[];
     static uint8_t txBufferIndex;
     static uint8_t txBufferLength;
+    
+    static uint8_t status;
 
     static uint8_t transmitting;
     static void (*user_onRequest)(void);
@@ -58,6 +67,7 @@ class TwoWire : public Stream
     void setWireTimeout(uint32_t timeout = 25000, bool reset_with_timeout = false);
     bool getWireTimeoutFlag(void);
     void clearWireTimeoutFlag(void);
+    void beginTransmission(uint8_t,bool);
     void beginTransmission(uint8_t);
     void beginTransmission(int);
     uint8_t endTransmission(void);
@@ -67,8 +77,12 @@ class TwoWire : public Stream
     uint8_t requestFrom(uint8_t, uint8_t, uint32_t, uint8_t, uint8_t);
     uint8_t requestFrom(int, int);
     uint8_t requestFrom(int, int, int);
+    uint8_t readFrom(uint8_t , uint8_t *, uint8_t, uint8_t);
+    uint8_t readByte(bool);
+    uint8_t readByte();
     virtual size_t write(uint8_t);
     virtual size_t write(const uint8_t *, size_t);
+    uint8_t writeTo(uint8_t , uint8_t* , uint8_t, uint8_t, uint8_t );
     virtual int available(void);
     virtual int read(void);
     virtual int peek(void);

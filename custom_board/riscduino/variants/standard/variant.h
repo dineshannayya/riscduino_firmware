@@ -55,7 +55,7 @@ static const uint8_t MOSI = PIN_SPI1_MOSI;
 static const uint8_t MISO = PIN_SPI1_MISO;
 static const uint8_t SCK  = PIN_SPI1_SCK;
 
-static const uint32_t SPI_IOF_MASK = 0x400;
+static const uint32_t SPI_IOF_MASK  = 0x400;
 static const uint32_t IOF_UART_MASK = IOF0_UART0_MASK;
 
 #define VARIANT_DIGITAL_PIN_MAP  { \

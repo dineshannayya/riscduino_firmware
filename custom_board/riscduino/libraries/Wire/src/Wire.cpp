@@ -25,7 +25,6 @@ extern "C" {
   #include <stdlib.h>
   #include <string.h>
   #include <inttypes.h>
-  #include "utility/twi.h"
 }
 
 #include "Wire.h"
@@ -35,6 +34,7 @@ extern "C" {
 uint8_t TwoWire::rxBuffer[BUFFER_LENGTH];
 uint8_t TwoWire::rxBufferIndex = 0;
 uint8_t TwoWire::rxBufferLength = 0;
+uint8_t TwoWire::status = 0;
 
 uint8_t TwoWire::txAddress = 0;
 uint8_t TwoWire::txBuffer[BUFFER_LENGTH];
@@ -55,21 +55,28 @@ TwoWire::TwoWire()
 
 void TwoWire::begin(void)
 {
+
+  status  = WIRE_SUCESS;
   rxBufferIndex = 0;
   rxBufferLength = 0;
 
   txBufferIndex = 0;
   txBufferLength = 0;
 
-  twi_init();
-  twi_attachSlaveTxEvent(onRequestService); // default callback must exist
-  twi_attachSlaveRxEvent(onReceiveService); // default callback must exist
+  GLBL_REG(GLBL_MULTI_FUNC)  |= WIRE_IOF_MASK; // Enable I2C GPIO I/F
+ 
+  // I2C Clock to 1Mhz 
+  uint16_t  i2c_speed = (F_CPU/1000000) -1;
+  WIRE_REG(WIRE_REG_BITRATE_L)  = i2c_speed & 0xFF; 
+  WIRE_REG(WIRE_REG_BITRATE_H)  = (i2c_speed >> 8) & 0xFF; 
+  
+  WIRE_REG(WIRE_REG_CTRL)    |= WIRE_CTRL_ENB(1); // Enable I2C core
 }
 
 void TwoWire::begin(uint8_t address)
 {
   begin();
-  twi_setAddress(address);
+  //twi_setAddress(address);
 }
 
 void TwoWire::begin(int address)
@@ -79,12 +86,14 @@ void TwoWire::begin(int address)
 
 void TwoWire::end(void)
 {
-  twi_disable();
+  //twi_disable();
 }
 
 void TwoWire::setClock(uint32_t clock)
 {
-  twi_setFrequency(clock);
+  uint16_t  i2c_speed = (F_CPU/clock) -1;
+  WIRE_REG(WIRE_REG_BITRATE_L)  = i2c_speed & 0xFF; 
+  WIRE_REG(WIRE_REG_BITRATE_H)  = (i2c_speed >> 8) & 0xFF; 
 }
 
 /***
@@ -114,7 +123,7 @@ void TwoWire::setClock(uint32_t clock)
 
  */
 void TwoWire::setWireTimeout(uint32_t timeout, bool reset_with_timeout){
-  twi_setTimeoutInMicros(timeout, reset_with_timeout);
+  //twi_setTimeoutInMicros(timeout, reset_with_timeout);
 }
 
 /***
@@ -123,15 +132,21 @@ void TwoWire::setWireTimeout(uint32_t timeout, bool reset_with_timeout){
  * @return true if timeout has occurred since the flag was last cleared.
  */
 bool TwoWire::getWireTimeoutFlag(void){
-  return(twi_manageTimeoutFlag(false));
+  //return(twi_manageTimeoutFlag(false));
+  return false;
 }
 
 /***
  * Clears the TWI timeout flag.
  */
 void TwoWire::clearWireTimeoutFlag(void){
-  twi_manageTimeoutFlag(true);
+  //twi_manageTimeoutFlag(true);
 }
+
+/**********************************************************************
+   I2C Read Transaction
+ <Start> <i2c port addr [w]>  <iaddress[w]> <Stop> <Start> <i2 port addr[r]> <rbuf[r]> <Stop>
+***********************************************************************/
 
 uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint32_t iaddress, uint8_t isize, uint8_t sendStop)
 {
@@ -140,7 +155,8 @@ uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint32_t iaddres
   // some devices' internal registers. This function is executed by the hardware
   // TWI module on other processors (for example Due's TWI_IADR and TWI_MMR registers)
 
-  beginTransmission(address);
+  //  <Start> <i2c port addr [w]>
+  beginTransmission(address,false);
 
   // the maximum size of internal address is 3 bytes
   if (isize > 3){
@@ -148,9 +164,11 @@ uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint32_t iaddres
   }
 
   // write internal register address - most significant byte first
+  //  <iaddress[w]> <Stop>
+  // write internal register address - most significant byte first
   while (isize-- > 0)
     write((uint8_t)(iaddress >> (isize*8)));
-  endTransmission(false);
+  endTransmission(true);
   }
 
   // clamp to buffer length
@@ -158,7 +176,7 @@ uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint32_t iaddres
     quantity = BUFFER_LENGTH;
   }
   // perform blocking read into buffer
-  uint8_t read = twi_readFrom(address, rxBuffer, quantity, sendStop);
+  uint8_t read = readFrom(address, rxBuffer, quantity, sendStop);
   // set rx buffer iterator vars
   rxBufferIndex = 0;
   rxBufferLength = read;
@@ -185,8 +203,13 @@ uint8_t TwoWire::requestFrom(int address, int quantity, int sendStop)
   return requestFrom((uint8_t)address, (uint8_t)quantity, (uint8_t)sendStop);
 }
 
-void TwoWire::beginTransmission(uint8_t address)
+//----------------------------------
+// bWrRd: 0 - Write, 1 -> Read
+//----------------------------------
+
+void TwoWire::beginTransmission(uint8_t address,bool bWrRd)
 {
+  volatile int32_t x;
   // indicate that we are transmitting
   transmitting = 1;
   // set address of targeted slave
@@ -194,11 +217,26 @@ void TwoWire::beginTransmission(uint8_t address)
   // reset tx buffer iterator vars
   txBufferIndex = 0;
   txBufferLength = 0;
+  status  = WIRE_SUCESS;
+  
+  WIRE_REG(WIRE_REG_WDATA) = (address << 1) | bWrRd;
+  WIRE_REG(WIRE_REG_CMD)   = WIRE_CMD_WR(1) | WIRE_CMD_START(1) ;
+  // WaitWIRE_STAT_RACK for Transmission completion
+  x =WIRE_REG(WIRE_REG_STATUS);
+  while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_TIP(1)) ;
+
+  if(x & WIRE_STAT_RACK(1)) status = WIRE_ADDR_NACK;
+
+}
+
+void TwoWire::beginTransmission(uint8_t address)
+{
+  beginTransmission(address,(bool) false);
 }
 
 void TwoWire::beginTransmission(int address)
 {
-  beginTransmission((uint8_t)address);
+  beginTransmission((uint8_t)address,(bool) false);
 }
 
 //
@@ -217,7 +255,7 @@ void TwoWire::beginTransmission(int address)
 uint8_t TwoWire::endTransmission(uint8_t sendStop)
 {
   // transmit buffer (blocking)
-  uint8_t ret = twi_writeTo(txAddress, txBuffer, txBufferLength, 1, sendStop);
+  uint8_t ret = writeTo(txAddress, txBuffer, txBufferLength, 1, sendStop);
   // reset tx buffer iterator vars
   txBufferIndex = 0;
   txBufferLength = 0;
@@ -239,7 +277,6 @@ uint8_t TwoWire::endTransmission(void)
 // or after beginTransmission(address)
 size_t TwoWire::write(uint8_t data)
 {
-  if(transmitting){
   // in master transmitter mode
     // don't bother if buffer is full
     if(txBufferLength >= BUFFER_LENGTH){
@@ -251,11 +288,6 @@ size_t TwoWire::write(uint8_t data)
     ++txBufferIndex;
     // update amount in buffer   
     txBufferLength = txBufferIndex;
-  }else{
-  // in slave send mode
-    // reply to master
-    twi_transmit(&data, 1);
-  }
   return 1;
 }
 
@@ -264,16 +296,10 @@ size_t TwoWire::write(uint8_t data)
 // or after beginTransmission(address)
 size_t TwoWire::write(const uint8_t *data, size_t quantity)
 {
-  if(transmitting){
   // in master transmitter mode
     for(size_t i = 0; i < quantity; ++i){
       write(data[i]);
     }
-  }else{
-  // in slave send mode
-    // reply to master
-    twi_transmit(data, quantity);
-  }
   return quantity;
 }
 
@@ -371,6 +397,102 @@ void TwoWire::onRequest( void (*function)(void) )
 {
   user_onRequest = function;
 }
+
+uint8_t TwoWire:: readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sendStop)
+{
+  uint8_t i;
+
+  //  <Start> <i2c port addr [R]>
+  beginTransmission(address,true);
+  
+  // copy twi buffer to data
+  for(i = 0; i < length; ++i){
+    if(i == length-1) {
+        data[i] = readByte(true); // Send Last Tranaction with Nack
+    } else {
+        data[i] = readByte(false); // Send Read with ack
+    }
+  }
+  endTransmission(true);
+	
+  return length;
+}
+
+
+//---------------------------------------------------------
+// Normally Last Read transaction should exit with Nack=1
+//---------------------------------------------------------
+uint8_t TwoWire:: readByte(bool bNack) {
+
+    uint8_t data;
+    volatile int32_t x;
+
+    WIRE_REG(WIRE_REG_CMD)   = WIRE_CMD_RD(1) | WIRE_CMD_ACK(bNack);
+    x =WIRE_REG(WIRE_REG_STATUS);
+    while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_TIP(1)) ;
+    data= WIRE_REG(WIRE_REG_RDATA) ;
+    return data;
+
+}
+
+uint8_t TwoWire:: readByte() {
+     return readByte((bool) false);
+}
+
+/* 
+ * Function twi_writeTo
+ * Desc     attempts to become twi bus master and write a
+ *          series of bytes to a device on the bus
+ * Input    address: 7bit i2c device address
+ *          data: pointer to byte array
+ *          length: number of bytes in array
+ *          wait: boolean indicating to wait for write or not
+ *          sendStop: boolean indicating whether or not to send a stop at the end
+ * Output   0 .. success
+ *          1 .. length to long for buffer
+ *          2 .. address send, NACK received
+ *          3 .. data send, NACK received
+ *          4 .. other twi error (lost bus arbitration, bus error, ..)
+ *          5 .. timeout
+ */
+uint8_t TwoWire::writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait, uint8_t sendStop)
+{
+  volatile int32_t x;
+  uint8_t i;
+
+
+  
+  // Send the Data Byte
+  for(i = 0; i < length; ++i){
+    WIRE_REG(WIRE_REG_WDATA) = data[i];
+    WIRE_REG(WIRE_REG_CMD)   = WIRE_CMD_WR(1) ;
+    // Wait for Transmission completion
+    x =WIRE_REG(WIRE_REG_STATUS);
+    while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_TIP(1)) ;
+    if(x == WIRE_STAT_RACK(1)) {
+         status = WIRE_DATA_NACK;
+         return status;
+    }
+  }
+  
+  if( sendStop) {
+     // Send Stop
+     WIRE_REG(WIRE_REG_CMD)   = WIRE_CMD_STOP(sendStop) ;
+     x =WIRE_REG(WIRE_REG_STATUS);
+     while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_BUSY(1)) ;
+  }
+
+  return status;	// success
+  //if (error == 0xFF)
+  //  return 0;	// success
+  //else if (error == TW_MT_SLA_NACK)
+  //  return 2;	// error: address send, nack received
+  //else if (error == TW_MT_DATA_NACK)
+  //  return 3;	// error: data send, nack received
+  //else
+  //  return 4;	// other twi error
+}
+
 
 // Preinstantiate Objects //////////////////////////////////////////////////////
 
