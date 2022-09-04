@@ -479,7 +479,7 @@ uint8_t TwoWire::writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t
      // Send Stop
      WIRE_REG(WIRE_REG_CMD)   = WIRE_CMD_STOP(sendStop) ;
      x =WIRE_REG(WIRE_REG_STATUS);
-     while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_BUSY(1)) ;
+     while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_FSM_BUSY(1)) ;
   }
 
   return status;	// success

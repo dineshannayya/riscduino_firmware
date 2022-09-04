@@ -26,8 +26,9 @@
 #define WIRE_CTRL_IEN(x)            (((x) & 0x1) << 6)   // I2C Interrupt Enabled
 
 #define WIRE_STAT_RACK(x)          (((x) & 0x1) << 7)   // Receive ACK
-#define WIRE_STAT_BUSY(x)          (((x) & 0x1) << 6)   // I2C Busy
+#define WIRE_STAT_CMD_BUSY(x)      (((x) & 0x1) << 6)   // I2C CMD Busy
 #define WIRE_STAT_AL(x)            (((x) & 0x1) << 5)   // Arbitration Lost
+#define WIRE_STAT_FSM_BUSY(x)      (((x) & 0x1) << 4)   // I2C FSM Busy Indication
 #define WIRE_STAT_TIP(x)           (((x) & 0x1) << 1)   // Transfer in Progress
 #define WIRE_STAT_IRQ(x)           ((x) & 0x1)          // Interrupt
 

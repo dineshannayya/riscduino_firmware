@@ -106,7 +106,8 @@ UARTClass::begin(unsigned long bauds)
 {
   if(id == 0) { // UART-0
      GLBL_REG(GLBL_CFG0)        |= IOF0_UART0_RST;
-     GLBL_REG(GLBL_MULTI_FUNC) |= IOF0_UART0_ENB;
+     GLBL_REG(GLBL_MULTI_FUNC) &= ~IOF0_MUART_ENB; // Disable Master UART
+     GLBL_REG(GLBL_MULTI_FUNC) |= IOF0_UART0_ENB;  // Enable Slave UART
   } else { // UART-1
      GLBL_REG(GLBL_CFG0)        |= IOF0_UART1_RST;
      GLBL_REG(GLBL_MULTI_FUNC) |= IOF0_UART1_ENB;

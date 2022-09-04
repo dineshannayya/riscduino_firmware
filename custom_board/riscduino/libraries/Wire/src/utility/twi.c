@@ -151,7 +151,7 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
     WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_START(1) | WIRE_CTRL_RD(1);
 
   // wait for read operation to complete
-  while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_BUSY(1)) {
+  while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_CMD_BUSY(1)) {
     continue;
   }
 
@@ -230,7 +230,7 @@ uint8_t twi_writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait
     // send start condition
     WIRE_REG(WIRE_REG_CTRL) = WIRE_CTRL_START(1) | WIRE_CTRL_RD(1);
 
-  while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_BUSY(1)) {
+  while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_CMD_BUSY(1)) {
     continue;
   }
   
@@ -329,7 +329,7 @@ void twi_stop(void)
 
   // wait for stop condition to be exectued on bus
   // TWINT is not set after a stop condition!
-  while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_BUSY(1)) {
+  while ((x =WIRE_REG(WIRE_REG_STATUS)) & WIRE_STAT_CMD_BUSY(1)) {
     continue;
   }
 

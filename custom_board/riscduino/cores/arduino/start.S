@@ -7,6 +7,10 @@
 # define SREG sw
 # define REGBYTES 4
 
+.altmacro
+#define GLBL_CFG_MAIL_BOX              0x1002003C      // Mail Box for TB and RISCV Communication
+#define TEST_START_CMD                 0x00000001      // Test Start Indication
+
 	.section .init
 	.globl _start
 	.type _start,@function
@@ -56,6 +60,10 @@ _start:
 	fssr x0
 1:
 #endif
+
+    li  t0, GLBL_CFG_MAIL_BOX
+    li  t1, TEST_START_CMD             // Set Text Start Command
+    sw  t1, (t0)                       //send command to Mail Box Register
 
 	/* argc = argv = 0 */
 	li a0, 0
