@@ -63,6 +63,8 @@ void TwoWire::begin(void)
   txBufferIndex = 0;
   txBufferLength = 0;
 
+  GLBL_REG(GLBL_CFG0)        |= IOF0_WIRE_RST; // Remove I2C Reset
+
   GLBL_REG(GLBL_MULTI_FUNC)  |= WIRE_IOF_MASK; // Enable I2C GPIO I/F
  
   // I2C Clock to 1Mhz 

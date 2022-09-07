@@ -11,6 +11,8 @@
 #define GLBL_INTR_CLR       (0x10)  // Global Interrupt Clear
 #define GLBL_MULTI_FUNC     (0x14)  // GPIO Multi Function
 #define GLBL_CLK_CTRL       (0x18)  // RTC/USB clock control;
+#define GLBL_PLL_CFG1       (0x1C)  // PLL Config1
+#define GLBL_PLL_CFG2       (0x20)  // PLL Config2
 
 #define GLBL_PAD_STRAP      (0x30)  // Strap as seen in PAD
 #define GLBL_STRAP_STICKY   (0x34)  // Sticky strap used in soft reboot
@@ -23,8 +25,8 @@
 #define GLBL_SOFT_REG3      (0x4C)  // Software Reg-3
 #define GLBL_SOFT_REG4      (0x50)  // Software Reg-4
 #define GLBL_SOFT_REG5      (0x54)  // Software Reg-5
-#define GLBL_SOFT_REG5      (0x58)  // Software Reg-6
-#define GLBL_SOFT_REG5      (0x5C)  // Software Reg-7
+#define GLBL_SOFT_REG6      (0x58)  // Software Reg-6
+#define GLBL_SOFT_REG7      (0x5C)  // Software Reg-7
 
 
 

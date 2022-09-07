@@ -30,7 +30,7 @@
 #define PWM_BASE_ADDR           _AC(0x10020100,UL)
 #define TIMER_BASE_ADDR         _AC(0x10020180,UL)
 #define SEMA_BASE_ADDR          _AC(0x10020200,UL)
-#define WS281X_BASE_ADDR        _AC(0x10020140,UL)
+#define WS281X_BASE_ADDR        _AC(0x10020280,UL)
 #define UART0_BASE_ADDR         _AC(0x10010000,UL)
 #define UART1_BASE_ADDR         _AC(0x10010100,UL)
 #define WIRE_BASE_ADDR          _AC(0x10010040,UL)
