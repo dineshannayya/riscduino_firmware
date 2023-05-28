@@ -10,6 +10,8 @@
 .altmacro
 #define GLBL_CFG_MAIL_BOX              0x1002003C      // Mail Box for TB and RISCV Communication
 #define TEST_START_CMD                 0x00000001      // Test Start Indication
+#define WBI_CFG_DCG                    0x10030004      // Wishbone Interrconnect Dynamic Clock Gate Control
+#define WBI_DCG_CMD                    0x00000001      // Dynamic Clock Gate Command
 
 	.section .init
 	.globl _start
@@ -64,6 +66,10 @@ _start:
     li  t0, GLBL_CFG_MAIL_BOX
     li  t1, TEST_START_CMD             // Set Text Start Command
     sw  t1, (t0)                       //send command to Mail Box Register
+    // Dynamic Clock 
+    li  t0, WBI_CFG_DCG
+    li  t1, WBI_DCG_CMD               
+    sw  t1, (t0)                       
 
 	/* argc = argv = 0 */
 	li a0, 0
