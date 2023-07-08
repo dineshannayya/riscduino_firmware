@@ -1,4 +1,4 @@
-name= Riscduino Score Boards
+name= Riscduino Boards
 version=1.0.1
 
 # Compile variables

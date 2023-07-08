@@ -1,7 +1,7 @@
 // See LICENSE for license details.
 
-#ifndef _RISCDUINO_SCORE_H
-#define _RISCDUINO_SCORE_H
+#ifndef _RISCDUINO_H
+#define _RISCDUINO_H
 
 #include <stdint.h>
 
@@ -19,7 +19,7 @@
 #define BLUE_LED_OFFSET  21
 
 // These are the GPIO bit offsets for the differen digital pins
-// on the headers for Riscduino Score Dev Kit.
+// on the headers for Riscduino Dev Kit.
 #define PIN_0_OFFSET 16
 #define PIN_1_OFFSET 17
 #define PIN_2_OFFSET 18
@@ -59,7 +59,7 @@
        -1))))) 
 
 
-// These buttons are present only on the Riscduino Score Dev Kit.
+// These buttons are present only on the Riscduino Dev Kit.
 #ifdef HAS_BOARD_BUTTONS
 #define BUTTON_0_OFFSET 15
 #define BUTTON_1_OFFSET 30
@@ -78,4 +78,4 @@
 
 void write_hex(int fd, uint32_t hex);
 
-#endif /* _RISCDUINO_SCORE_H */
+#endif /* _RISCDUINO_H */

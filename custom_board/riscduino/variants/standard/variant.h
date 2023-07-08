@@ -1,12 +1,12 @@
 
-#ifndef _VARIANT_RISCDUINO_SCORE_
-#define _VARIANT_RISCDUINO_SCORE_
+#ifndef _VARIANT_RISCDUINO
+#define _VARIANT_RISCDUINO
 
 
 #include <stdint.h>
 
-#define RISCDUINO_SCORE_PLATFORM
-#define RISCDUINO_SCORE
+#define RISCDUINO_PLATFORM
+#define RISCDUINO
 #define RISCV
 #include "platform.h"
 

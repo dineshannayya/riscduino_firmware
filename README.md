@@ -66,7 +66,7 @@ This is supported for macOS and Linux.
 # Reference
 
 * **Arduino IDE: Creating Custom Boards** - https://www.hackster.io/wallarug/arduino-ide-creating-custom-boards-89f7a6
-* **Arduino Platform specification** - https://arduino.github.io/arduino-cli/0.23/platform-specification/
+* **Arduino Platform specification** - https://arduino.github.io/arduino-cli/latest/platform-specification/
 * **Adding Custom (Zero based) boards to the Arduino IDE** - https://forum.arduino.cc/t/adding-custom-zero-based-boards-to-the-arduino-ide/394499/3
 * **robotics-masters** - https://github.com/robotics-masters/mm1-hat-arduino
 * **Arduino core extensions for FPGA-based core** -https://github.com/f32c/fpgarduino

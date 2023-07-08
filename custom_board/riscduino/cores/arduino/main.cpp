@@ -34,14 +34,14 @@ uint32_t mtime_lo(void)
 
 
 
-static void riscduino_score_clock_setup () {
+static void riscduino_clock_setup () {
 
   // This is a very coarse parameterization. To revisit in the future
   // as more chips and boards are added.
    
 }
 
-void riscduino_score_specific_initialization(void)
+void riscduino_specific_initialization(void)
 {
 
   write_csr(mtvec, &trap_entry);
@@ -50,7 +50,7 @@ void riscduino_score_specific_initialization(void)
     write_csr(fcsr, 0); // initialize rounding mode, undefined at reset
   }
   
-  riscduino_score_clock_setup();
+  riscduino_clock_setup();
   
 }
 
@@ -63,7 +63,7 @@ int main( void )
   // Compute F_CPU inverse, used for millis and micros functions.
   calc_inv(F_CPU/1000, &f_cpu_1000_inv);
   calc_inv(F_CPU/1000000, &f_cpu_1000000_inv);
-  riscduino_score_specific_initialization();
+  riscduino_specific_initialization();
   setup();
   
   do {
