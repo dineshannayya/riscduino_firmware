@@ -66,11 +66,15 @@ _start:
     li  t0, GLBL_CFG_MAIL_BOX
     li  t1, TEST_START_CMD             // Set Text Start Command
     sw  t1, (t0)                       //send command to Mail Box Register
-    // Dynamic Clock 
-    li  t0, WBI_CFG_DCG
-    li  t1, WBI_DCG_CMD               
-    sw  t1, (t0)                       
+    /*
+     Dynamic Clock :
+      Need to See How to Enable the clock gating check 
+     as this supported only from MPW-9 onwards
 
+     li  t0, WBI_CFG_DCG
+     li  t1, WBI_DCG_CMD               
+      sw  t1, (t0)                       
+     */
 	/* argc = argv = 0 */
 	li a0, 0
 	li a1, 0
