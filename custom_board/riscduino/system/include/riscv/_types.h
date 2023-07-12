@@ -47,11 +47,11 @@
 /*
  * Basic types upon which most other types are built.
  */
-typedef	__signed char		__int8_t;
-typedef	unsigned char		__uint8_t;
-typedef	short			__int16_t;
-typedef	unsigned short		__uint16_t;
-typedef	int			__int32_t;
+typedef	__signed char	(aligned (4))	__int8_t;
+typedef	unsigned char	(aligned (4))	__uint8_t;
+typedef	short			(aligned (4))   __int16_t;
+typedef	unsigned short	(aligned (4))	__uint16_t;
+typedef	int			        __int32_t;
 typedef	unsigned int		__uint32_t;
 
 #ifdef __mips_n64

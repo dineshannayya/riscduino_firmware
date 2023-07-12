@@ -56,9 +56,9 @@ class UARTClass : public HardwareSerial
     };
 
 //    volatile uint8_t  tx_xoff;  // bit 7 set = disable Xoff/Xon flow control
-    volatile uint8_t  sio_rxbuf_head;
-    volatile uint8_t  sio_rxbuf_tail;
-    char              sio_rxbuf[SIO_RXBUFSIZE];
+    volatile uint32_t  sio_rxbuf_head ;
+    volatile uint32_t  sio_rxbuf_tail ;
+    uint32_t              sio_rxbuf[SIO_RXBUFSIZE];
 };
 
 #endif // _UART_CLASS_

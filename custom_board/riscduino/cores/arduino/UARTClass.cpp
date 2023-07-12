@@ -113,10 +113,11 @@ UARTClass::begin(unsigned long bauds)
      GLBL_REG(GLBL_MULTI_FUNC) |= IOF0_UART1_ENB;
   }
 
+  sio_setbaud(bauds);
+
   UART_REG(base,UART_REG_CTRL) |= UART_TXEN;
   UART_REG(base,UART_REG_CTRL) |= UART_RXEN;
 
-  sio_setbaud(bauds);
 }
 
 
