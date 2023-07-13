@@ -25,7 +25,7 @@
 			{
 			    "packager": "riscduino",
 			    "version": "3f7b3696217548bc31aeccf9a0c89bdfa4e16a8f",
-			    "name": "riscv32-unknown-elf-gcc"
+			    "name": "riscv64-unknown-elf-gcc"
 			},
 		    ]
 		}
@@ -33,14 +33,14 @@
 	    "tools": [
 		{
 		    "version": "3f7b3696217548bc31aeccf9a0c89bdfa4e16a8f",
-		    "name": "riscv32-unknown-elf-gcc",
+		    "name": "riscv64-unknown-elf-gcc",
 		    "systems": [
 			{
-			    "url": "https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.12/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-w64-mingw32.zip",
-			    "checksum": "SHA-256:d37fe8a7abfeb9b1cc7cce91198deaafa09fc524b26c1c331a0fdb81d3948848",
+			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-w64-mingw32",
+			    "checksum": "SHA-256:535eb2121bfc5882b7da685f65c1e6aa38ee61c28f1de48e48e881625a646f31",
 			    "host": "i686-mingw32",
 			    "archiveFileName": "riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-w64-mingw32.zip",
-			    "size": "469368720"
+			    "size": "65377351"
 			}
 		    ]
 		},

@@ -60,7 +60,11 @@ This is supported for macOS and Linux.
 </table>
 
 
+# Command Reference
 
+*  To get SHA256 in windows 
+certutil -hashfile <example> SHA256
+Example: certutil -hashfile .\riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-w64-mingw32.zip SHA256
 
 
 # Reference
