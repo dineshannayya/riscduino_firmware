@@ -10,16 +10,16 @@
         {
           "name": "Riscduino Boards",
           "architecture": "riscv",
-          "version": "1.0.0",
+          "version": "1.0.2",
           "deprecated": false,
           "category": "Riscduino",
-          "url": "https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/riscduino-1.0.0.tar.gz",
-          "archiveFileName": "riscduino-1.0.0.tar.gz",
+          "url": "https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/riscduino-1.0.3.tar.gz",
+          "archiveFileName": "riscduino-1.0.3.tar.gz",
           "checksum": "SHA-256:d476c6a3519353b9ff7312d436f33d0c685238930adbd393b49e1426f80d4bcf",
           "size": "111947",
           "boards": [
             {
-              "name": "Riscduino Xcore"
+              "name": "Riscduino Boards"
             }
           ],
           "help": {},

@@ -12,11 +12,11 @@
 		{
 		    "category": "Riscduino",
 		    "name": "Riscduino Boards",
-		    "version": "1.0.2",
-		    "url": "https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/riscduino-1.0.2.tar.gz",
-		    "checksum": "SHA-256:f1e2078800c73d9139a15928943b9fdded9c816f4e27c47f76df10974e77ba15
-	        "archiveFileName": "riscduino-1.0.2.tar.gz",
-		    "size": "123317",
+		    "version": "1.0.3",
+		    "url": "https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/riscduino-1.0.3.tar.gz",
+		    "checksum": "SHA-256:2db9bb98f57051c60bced97b391e502213e33b6dab4c9fea171092fb70b12508"
+	        "archiveFileName": "riscduino-1.0.3.tar.gz",
+		    "size": "122747",
 		    "architecture": "riscv",
 		    "boards": [
 			{"name": "Riscduino"}
@@ -24,7 +24,7 @@
 		    "toolsDependencies": [
 			{
 			    "packager": "riscduino",
-			    "version": "fc233dfab53c5cdb09e0a08fe424b2bf9a645b40",
+			    "version": "15e19cd0f1f80f41bc0c3278be4fcb9f059bb9bb",
 			    "name": "riscv64-unknown-elf-gcc"
 			}
 		    ]
@@ -32,7 +32,7 @@
 	    ],
 	    "tools": [
 		{
-		    "version": "fc233dfab53c5cdb09e0a08fe424b2bf9a645b40",
+		    "version": "15e19cd0f1f80f41bc0c3278be4fcb9f059bb9bb",
 		    "name": "riscv64-unknown-elf-gcc",
 		    "systems": [
 			{
