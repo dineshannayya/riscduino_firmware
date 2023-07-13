@@ -26,7 +26,7 @@
 			    "packager": "riscduino",
 			    "version": "3f7b3696217548bc31aeccf9a0c89bdfa4e16a8f",
 			    "name": "riscv64-unknown-elf-gcc"
-			},
+			}
 		    ]
 		}
 	    ],
@@ -43,7 +43,7 @@
 			    "size": "65377351"
 			}
 		    ]
-		},
+		}
 	    ]
 	}
     ]
