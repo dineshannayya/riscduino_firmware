@@ -16,7 +16,7 @@
 		    "url": "https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/riscduino-1.0.1.tar.gz",
 		    "checksum": "SHA-256:29adba949033be099a353c99f51748fe22f4cda918fc167720a0b5adcac56663",
 	        "archiveFileName": "riscduino-1.0.1.tar.gz",
-		    "size": "111947",
+		    "size": "128837",
 		    "architecture": "riscv",
 		    "boards": [
 			{"name": "Riscduino"}
