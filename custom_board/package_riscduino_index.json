@@ -36,7 +36,7 @@
 		    "name": "riscv64-unknown-elf-gcc",
 		    "systems": [
 			{
-			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-w64-mingw32",
+			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-w64-mingw32.zip",
 			    "checksum": "SHA-256:535eb2121bfc5882b7da685f65c1e6aa38ee61c28f1de48e48e881625a646f31",
 			    "host": "i686-mingw32",
 			    "archiveFileName": "riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-w64-mingw32.zip",
