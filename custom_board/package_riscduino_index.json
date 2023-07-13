@@ -14,12 +14,12 @@
 		    "name": "Riscduino Boards",
 		    "version": "1.0.3",
 		    "url": "https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/riscduino-1.0.3.tar.gz",
-		    "checksum": "SHA-256:2db9bb98f57051c60bced97b391e502213e33b6dab4c9fea171092fb70b12508"
+		    "checksum": "SHA-256:2db9bb98f57051c60bced97b391e502213e33b6dab4c9fea171092fb70b12508",
 	        "archiveFileName": "riscduino-1.0.3.tar.gz",
 		    "size": "122747",
 		    "architecture": "riscv",
 		    "boards": [
-			{"name": "Riscduino"}
+			{"name": "Riscduino Uno"}
 		    ], 
 		    "toolsDependencies": [
 			{
