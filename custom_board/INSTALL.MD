@@ -7,3 +7,6 @@
 3. find sha256sum
    sha256sum riscduino-1.0.0.tar.gz
 4. Update the installed.json, sha256 and version
+
+# use sha1sum to define the version
+   sha1sum.exe riscduino-1.0.2.tar.gz

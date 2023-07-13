@@ -3,31 +3,54 @@
 menu.clksrc=CPU Clock Frequency
 menu.toolsloc=Tool Install Location
 
-riscduino_devkit.name=Riscduino core DevKit
-riscduino_devkit.menu.toolsloc.default=Default
-riscduino_devkit.menu.toolsloc.manual=Manual
-riscduino_devkit.menu.toolsloc.default.compiler.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
-riscduino_devkit.menu.toolsloc.manual.compiler.path=
+uno.name=Riscduino Uno
+uno.menu.toolsloc.default=Default
+uno.menu.toolsloc.manual=Manual
+uno.menu.toolsloc.default.compiler.path={runtime.tools.riscv64-unknown-elf-gcc.path}/bin/
+uno.menu.toolsloc.manual.compiler.path=
 
-riscduino_devkit.program.tool=rdnodude
-riscduino_devkit.upload.tool=rdnodude
-riscduino_devkit.upload.tool.default=rdnodude
-riscduino_devkit.upload.protocol=riscduino
-riscduino_devkit.upload.maximum_size=8388608
-riscduino_devkit.upload.maximum_data_size=2048
-riscduino_devkit.upload.speed=9600
+uno.vid.0=0x2341
+uno.pid.0=0x0043
+uno.vid.1=0x2341
+uno.pid.1=0x0001
+uno.vid.2=0x2A03
+uno.pid.2=0x0043
+uno.vid.3=0x2341
+uno.pid.3=0x0243
+uno.vid.4=0x2341
+uno.pid.4=0x006A
+uno.upload_port.0.vid=0x2341
+uno.upload_port.0.pid=0x0043
+uno.upload_port.1.vid=0x2341
+uno.upload_port.1.pid=0x0001
+uno.upload_port.2.vid=0x2A03
+uno.upload_port.2.pid=0x0043
+uno.upload_port.3.vid=0x2341
+uno.upload_port.3.pid=0x0243
+uno.upload_port.4.vid=0x2341
+uno.upload_port.4.pid=0x006A
+uno.upload_port.5.board=uno
 
 
-riscduino_devkit.build.mcu=rv32imac
-riscduino_devkit.build.f_cpu=16000000L
-riscduino_devkit.build.board=RISCDUINO_DEVKIT
-riscduino_devkit.build.core=riscduino
-riscduino_devkit.build.variant=standard
+uno.program.tool=rdnodude
+uno.upload.tool=rdnodude
+uno.upload.tool.default=rdnodude
+uno.upload.protocol=riscduino
+uno.upload.maximum_size=8388608
+uno.upload.maximum_data_size=2048
+uno.upload.speed=9600
+
+
+uno.build.mcu=rv32imac
+uno.build.f_cpu=10000000L
+uno.build.board=RISCDUINO_UNO
+uno.build.core=ycr
+uno.build.variant=standard
 
 # This sets a define for use in the compiled code.
-riscduino_devkit.build.boardenv=riscduino
-riscduino_devkit.build.sdata.size=4096
-riscduino_devkit.build.ldscript={compiler.sdk.path}/env/uncache/link.lds
+uno.build.boardenv=riscduino
+uno.build.sdata.size=4096
+uno.build.ldscript={compiler.sdk.path}/env/uncache/link.lds
 
 
 

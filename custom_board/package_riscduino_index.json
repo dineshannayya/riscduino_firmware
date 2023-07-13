@@ -12,11 +12,11 @@
 		{
 		    "category": "Riscduino",
 		    "name": "Riscduino Boards",
-		    "version": "1.0.1",
-		    "url": "https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/riscduino-1.0.1.tar.gz",
-		    "checksum": "SHA-256:29adba949033be099a353c99f51748fe22f4cda918fc167720a0b5adcac56663",
-	        "archiveFileName": "riscduino-1.0.1.tar.gz",
-		    "size": "128837",
+		    "version": "1.0.2",
+		    "url": "https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/riscduino-1.0.2.tar.gz",
+		    "checksum": "SHA-256:f1e2078800c73d9139a15928943b9fdded9c816f4e27c47f76df10974e77ba15
+	        "archiveFileName": "riscduino-1.0.2.tar.gz",
+		    "size": "123317",
 		    "architecture": "riscv",
 		    "boards": [
 			{"name": "Riscduino"}
@@ -24,7 +24,7 @@
 		    "toolsDependencies": [
 			{
 			    "packager": "riscduino",
-			    "version": "3f7b3696217548bc31aeccf9a0c89bdfa4e16a8f",
+			    "version": "fc233dfab53c5cdb09e0a08fe424b2bf9a645b40",
 			    "name": "riscv64-unknown-elf-gcc"
 			}
 		    ]
@@ -32,15 +32,15 @@
 	    ],
 	    "tools": [
 		{
-		    "version": "3f7b3696217548bc31aeccf9a0c89bdfa4e16a8f",
+		    "version": "fc233dfab53c5cdb09e0a08fe424b2bf9a645b40",
 		    "name": "riscv64-unknown-elf-gcc",
 		    "systems": [
 			{
-			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-w64-mingw32.zip",
-			    "checksum": "SHA-256:535eb2121bfc5882b7da685f65c1e6aa38ee61c28f1de48e48e881625a646f31",
+			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/riscv64-unknown-elf-toolchain-10.1.0-2020.06.24-x86_64-w64-mingw32.zip",
+			    "checksum": "SHA-256:524b272dbe5d1fbbdcd03facea4f954dbdd17affd426bedf2364a03499ad62fb",
 			    "host": "i686-mingw32",
-			    "archiveFileName": "riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-w64-mingw32.zip",
-			    "size": "65377351"
+			    "archiveFileName": "riscv64-unknown-elf-toolchain-10.1.0-2020.06.24-x86_64-w64-mingw32.zip",
+			    "size": "86905749"
 			}
 		    ]
 		}
