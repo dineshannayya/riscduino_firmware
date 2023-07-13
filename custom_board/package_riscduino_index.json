@@ -24,7 +24,7 @@
 		    "toolsDependencies": [
 			{
 			    "packager": "riscduino",
-			    "version": "15e19cd0f1f80f41bc0c3278be4fcb9f059bb9bb",
+			    "version": "1.0.0",
 			    "name": "riscv64-unknown-elf-gcc"
 			}
 		    ]
@@ -32,7 +32,7 @@
 	    ],
 	    "tools": [
 		{
-		    "version": "15e19cd0f1f80f41bc0c3278be4fcb9f059bb9bb",
+		    "version": "1.0.0",
 		    "name": "riscv64-unknown-elf-gcc",
 		    "systems": [
 			{
