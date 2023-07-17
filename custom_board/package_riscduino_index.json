@@ -12,11 +12,11 @@
 		{
 		    "category": "Riscduino",
 		    "name": "Riscduino Boards",
-		    "version": "1.0.3",
-		    "url": "https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/riscduino-1.0.3.tar.gz",
-		    "checksum": "SHA-256:2db9bb98f57051c60bced97b391e502213e33b6dab4c9fea171092fb70b12508",
-	        "archiveFileName": "riscduino-1.0.3.tar.gz",
-		    "size": "122747",
+		    "version": "1.0.4",
+		    "url": "https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/riscduino-1.0.4.tar.gz",
+		    "checksum": "SHA-256:bfde9d608b58dc18305d585cd466b19f5d828d7425aff4063a38e5dee633f6c5",
+	        "archiveFileName": "riscduino-1.0.4.tar.gz",
+		    "size": "123021",
 		    "architecture": "riscv",
 		    "boards": [
 			{"name": "Riscduino Uno"}
@@ -29,7 +29,7 @@
 			},
 			{
 			    "packager": "riscduino",
-			    "version": "1.0.1",
+			    "version": "1.0.2",
 			    "name": "rdnodude"
 			}
 		    ]
@@ -51,15 +51,15 @@
 		    ]
 		},
 		{
-		    "version": "1.0.1",
+		    "version": "1.0.2",
 		    "name": "rdnodude",
 		    "systems": [
 			{
-			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/rdnodude-0.0.1-2023.07.17-x86_64-w64-mingw32.zip",
-			    "checksum": "SHA-256:2578c0b897d2d411e13096e6281ba20c8f8e41467846a6096dfcc86416e4fb9d",
+			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/rdnodude-0.0.2-2023.07.17-x86_64-w64-mingw32.zip",
+			    "checksum": "SHA-256:91d99eec3cb303de5334c4d80994340e3c973380d0c8610b22b0309cc9708f22",
 			    "host": "i686-mingw32",
-			    "archiveFileName": "rdnodude-0.0.1-2023.07.17-x86_64-w64-mingw32.zip",
-			    "size": "4806"
+			    "archiveFileName": "rdnodude-0.0.2-2023.07.17-x86_64-w64-mingw32.zip",
+			    "size": "4804"
 			}
 
 		    ]
