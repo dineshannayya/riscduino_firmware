@@ -24,15 +24,20 @@
 		    "toolsDependencies": [
 			{
 			    "packager": "riscduino",
-			    "version": "1.0.0",
+			    "version": "1.0.1",
 			    "name": "riscv64-unknown-elf-gcc"
+			},
+			{
+			    "packager": "riscduino",
+			    "version": "1.0.1",
+			    "name": "rdnodude"
 			}
 		    ]
 		}
 	    ],
 	    "tools": [
 		{
-		    "version": "1.0.0",
+		    "version": "1.0.1",
 		    "name": "riscv64-unknown-elf-gcc",
 		    "systems": [
 			{
@@ -42,8 +47,24 @@
 			    "archiveFileName": "riscv64-unknown-elf-toolchain-10.1.0-2020.06.24-x86_64-w64-mingw32.zip",
 			    "size": "86905749"
 			}
+
+		    ]
+		},
+		{
+		    "version": "1.0.1",
+		    "name": "rdnodude",
+		    "systems": [
+			{
+			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/rdnodude-0.0.1-2023.07.17-x86_64-w64-mingw32.zip",
+			    "checksum": "SHA-256:2578c0b897d2d411e13096e6281ba20c8f8e41467846a6096dfcc86416e4fb9d
+			    "host": "i686-mingw32",
+			    "archiveFileName": "rdnodude-0.0.1-2023.07.17-x86_64-w64-mingw32.zip",
+			    "size": "4806"
+			}
+
 		    ]
 		}
+
 	    ]
 	}
     ]
