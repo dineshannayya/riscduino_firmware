@@ -32,13 +32,12 @@ uno.upload_port.4.pid=0x006A
 uno.upload_port.5.board=uno
 
 
-uno.program.tool=rdnodude
 uno.upload.tool=rdnodude
 uno.upload.tool.default=rdnodude
 uno.upload.protocol=riscduino
 uno.upload.maximum_size=8388608
 uno.upload.maximum_data_size=2048
-uno.upload.speed=9600
+uno.upload.speed=125000
 
 
 uno.build.mcu=rv32imac

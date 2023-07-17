@@ -80,17 +80,27 @@ recipe.size.regex=\s*[0-9]+\s+[0-9]+\s+[0-9]+\s+([0-9]+).*
 
 # Uploader tools
 # -------------------
-tools.openocd.path={runtime.tools.openocd.path}/bin/
-tools.openocd.cmd=openocd
-tools.openocd.program.params.verbose=-v
-tools.openocd.program.params.quiet=-q
-tools.openocd.program.config={runtime.platform.path}/sdk/bsp/env/{build.boardenv}/openocd.cfg
-tools.openocd.program.pattern="{path}{cmd}" -f {program.config} -c "flash protect 0 64 last off; program {build.path}/{build.project_name}.elf verify; resume 0x20400000; exit"
+tools.rdnodude.path={runtime.tools.rdnodude.path}
+tools.rdnodude.cmd.path={path}/bin/rdnodude
+
+tools.rdnodude.upload.params.verbose=
+tools.rdnodude.upload.verify=
+tools.rdnodude.upload.params.noverify=
+
+tools.rdnodude.upload.pattern="{cmd.path}" {upload.verbose} {upload.verify} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
+
+tools.rdnodude.program.params.verbose=
+tools.rdnodude.program.params.quiet=
+tools.rdnodude.program.verify=
+tools.rdnodude.program.params.noverify=
+tools.rdnodude.program.pattern="{cmd.path}" {upload.verbose} {upload.verify} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
 
 
-tools.manual_openocd.path=
-tools.manual_openocd.cmd=openocd
-tools.manual_openocd.program.params.verbose=-v
-tools.manual_openocd.program.params.quiet=-q
-tools.manual_openocd.program.config={runtime.platform.path}/sdk/bsp/env/{build.boardenv}/openocd.cfg
-tools.manual_openocd.program.pattern="{path}{cmd}" -f {program.config} -c "flash protect 0 64 last off; program {build.path}/{build.project_name}.elf verify; resume 0x20400000; exit"
+tools.rdnodude.erase.params.verbose=
+tools.rdnodude.erase.params.quiet=
+tools.rdnodude.erase.pattern="{cmd.path}" {upload.verbose} {upload.verify} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
+
+tools.rdnodude.bootloader.params.verbose=
+tools.rdnodude.bootloader.params.quiet=
+tools.rdnodude.bootloader.pattern="{cmd.path}" {upload.verbose} {upload.verify} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
+
