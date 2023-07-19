@@ -67,6 +67,13 @@
 			    "host": "i686-mingw32",
 			    "archiveFileName": "rdnodude-0.0.2-2023.07.17-x86_64-w64-mingw32.zip",
 			    "size": "4804"
+			},
+			{
+			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/rdnodude-0.0.2-2023.07.18-x86_64-i686-pc-linux-gnu.tar.gz",
+			    "checksum": "SHA-256:f1c398a0e359c65389e5598fb17510ab3b5385a366c77c4084ab6d914e340c96",
+			    "host": "x86_64-pc-linux-gnu",
+			    "archiveFileName": "rdnodude-0.0.2-2023.07.18-x86_64-i686-pc-linux-gnu.tar.gz",
+			    "size": "4804"
 			}
 
 		    ]
