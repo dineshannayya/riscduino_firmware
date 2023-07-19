@@ -29,11 +29,6 @@
 			},
 			{
 			    "packager": "riscduino",
-			    "version": "1.0.1",
-			    "name": "riscv32-unknown-elf-gcc"
-			},
-			{
-			    "packager": "riscduino",
 			    "version": "1.0.2",
 			    "name": "rdnodude"
 			}
@@ -51,20 +46,13 @@
 			    "host": "i686-mingw32",
 			    "archiveFileName": "riscv64-unknown-elf-toolchain-10.1.0-2020.06.24-x86_64-w64-mingw32.zip",
 			    "size": "86905749"
-			}
-
-		    ]
-		},
-		{
-		    "version": "1.0.1",
-		    "name": "riscv32-unknown-elf-gcc",
-		    "systems": [
+			},
 			{
-			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/riscv32-unknown-elf-gcc-3f7b3696-x86_64-pc-linux-gnu.tar.bz2",
-			    "checksum": "SHA-256:976e3b17b388d7ada2b6dbb9ca07719c0a188e25a48f0176560961fe287265bc",
+			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/riscv64-unknown-elf.gcc-12.1.0-i686-pc-linux-gnu.tar.gz",
+			    "checksum": "SHA-256:32db0384ff1851eaeeeab91bb4ded0ec5c401e1faf7e8eae4b87227900534d9e",
 			    "host": "x86_64-pc-linux-gnu",
-			    "archiveFileName": "riscv32-unknown-elf-gcc-3f7b3696-x86_64-pc-linux-gnu.tar.bz2",
-			    "size": "56081029"
+			    "archiveFileName": "riscv64-unknown-elf.gcc-12.1.0-i686-pc-linux-gnu.tar.gz",
+			    "size": "540455303"
 			}
 
 		    ]
