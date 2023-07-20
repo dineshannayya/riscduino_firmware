@@ -49,10 +49,10 @@
 			},
 			{
 			    "url": "https://github.com/dineshannayya/riscduino_tools/raw/main/riscv64-unknown-elf.gcc-8.2.0-i686-pc-linux-gnu.tar.gz",
-			    "checksum": "SHA-256:14c4e4b76cf3d66bc9828ae71cc6a47600a77eb2ca66f84f2d676831b53e4048",
+			    "checksum": "SHA-256:8b85dae91e5b0abbeb38d1926dfd3eebfe23e8fa8a55343a4f573ce5e6683ca6",
 			    "host": "x86_64-pc-linux-gnu",
 			    "archiveFileName": "riscv64-unknown-elf.gcc-8.2.0-i686-pc-linux-gnu.tar.gz",
-			    "size": "603089821"
+			    "size": "177274604"
 			}
 
 		    ]
