@@ -191,7 +191,14 @@ size_t Print::println(const Printable& x)
 }
 
 // Private Methods /////////////////////////////////////////////////////////////
-
+//---------------------------------------------------------------------------------
+// Author - Dinesh A
+// Date: 28th July 2023
+// Due to bug in handling partial byte access through SPI data memory space, we are changing
+// Any all char & char* definatin to int and int*
+//  06203 indicate any chip before June 2023
+//----------------------------------------------------------------------------------
+#ifdef RISCDUINO > 62023
 size_t Print::printNumber(unsigned long n, uint8_t base) {
   char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
   char *str = &buf[sizeof(buf) - 1];
@@ -212,7 +219,30 @@ size_t Print::printNumber(unsigned long n, uint8_t base) {
 
   return write(str,size);
 }
+#else 
+size_t Print::printNumber(unsigned long n, uint8_t base) {
+  int buf[2 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
+  size_t size = 0;
 
+
+  // prevent crash if called with base == 1
+  if (base < 2) base = 10;
+  
+  do {
+    unsigned long m = n;
+    n /= base;
+    int c = m - base * n;
+    buf[size] = c < 10 ? c + '0' : c + 'A' - 10;
+    size ++;
+  } while(n);
+
+  for(int i = 0; i < size; i++) {
+    write(buf[size-i-1]);
+  }
+
+  return size;
+}
+#endif 
 size_t Print::printFloat(double number, uint8_t digits) 
 { 
   size_t n = 0;

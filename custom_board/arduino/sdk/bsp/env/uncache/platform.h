@@ -139,6 +139,8 @@
 // Helper functions
 #define _REG32(p, i) (*(volatile uint32_t *) ((p) + (i)))
 #define _REG32P(p, i) ((volatile uint32_t *) ((p) + (i)))
+#define _REG8(p, i) (*(volatile uint8_t *) ((p) + (i)))
+#define _REG8P(p, i) ((volatile uint8_t *) ((p) + (i)))
 #define AON_REG(offset) _REG32(AON_BASE_ADDR, offset)
 #define CLINT_REG(offset) _REG32(CLINT_BASE_ADDR, offset)
 #define GLBL_REG(offset)  _REG32(GLBL_BASE_ADDR, offset)
@@ -160,6 +162,20 @@
 #define UART1_REG(offset) _REG32(UART1_BASE_ADDR, offset)
 #define UART_REG(base,offset) _REG32(base, offset)
 #define WIRE_REG(offset) _REG32(WIRE_BASE_ADDR, offset)
+
+
+// GPIO Port Defination
+// GPIO OUTPUT PORT
+#define OPORTA  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+0);
+#define OPORTB  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+1);
+#define OPORTC  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+2);
+#define OPORTD  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+3);
+
+// GPIO IN PORT
+#define IPORTA  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+0);
+#define IPORTB  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+1);
+#define IPORTC  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+2);
+#define IPORTD  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+3);
 
 // Misc
 
