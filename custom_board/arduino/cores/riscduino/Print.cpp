@@ -198,7 +198,7 @@ size_t Print::println(const Printable& x)
 // Any all char & char* definatin to int and int*
 //  06203 indicate any chip before June 2023
 //----------------------------------------------------------------------------------
-#ifdef RISCDUINO > 62023
+#ifdef RISCDUINO_SOC > 62023
 size_t Print::printNumber(unsigned long n, uint8_t base) {
   char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
   char *str = &buf[sizeof(buf) - 1];
