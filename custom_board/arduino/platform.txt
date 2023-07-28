@@ -56,7 +56,7 @@ build.openocdcfg=
 recipe.S.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.S.flags} -DRISCDUINO_SOC=62023 -DARDUINO={runtime.ide.version} {compiler.S.extra_flags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile c files
-recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} --DRISCDUINO_SOC=62023 DARDUINO={runtime.ide.version} {compiler.c.extra_flags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DRISCDUINO_SOC=62023 -DARDUINO={runtime.ide.version} {compiler.c.extra_flags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile c++ files
 recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DRISCDUINO_SOC=62023 -DARDUINO={runtime.ide.version} {compiler.cpp.extra_flags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
