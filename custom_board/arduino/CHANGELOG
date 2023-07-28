@@ -1,6 +1,9 @@
-RISCDUINO ?.?.?? ????.??.??
 
 RISCDUINO 0.0.1 21-June-2022
 
 * First public release.
 
+RISCDUINO 0.1.0 28-July-2023
+   New define RISCDUINO=62023 added to identify the MPW6 bugs
+        - Bug: Unsupported byte based access in data memory space;
+        - Fix: Changed all char, char * defination to int and int * defination
