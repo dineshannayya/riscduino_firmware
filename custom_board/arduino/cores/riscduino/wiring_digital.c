@@ -13,10 +13,10 @@ pinMode(uint32_t pin, uint32_t mode)
   
   switch (mode) {
   case INPUT_PULLUP:
-    GPIO_REG(GPIO_DSEL)      &= digitalPinToBitMask(pin);
+    GPIO_REG(GPIO_DSEL)      &= ~digitalPinToBitMask(pin);
     break;
   case INPUT:
-    GPIO_REG(GPIO_DSEL)      &= digitalPinToBitMask(pin);
+    GPIO_REG(GPIO_DSEL)      &= ~digitalPinToBitMask(pin);
     break;
   case OUTPUT:
     //GPIO_REG(GPIO_TYPE)      & ~digitalPinToBitMask(pin);
