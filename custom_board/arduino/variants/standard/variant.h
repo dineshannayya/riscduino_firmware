@@ -88,8 +88,8 @@ SPARE	    PA2		                D24           2             Caravel_sdi/digital_i
 SPARE	    PA4		                D25           4             Caravel_sck/digital_io[4]
 
 // Future Use
-SPARE	    PA0		                D23           0             Caravel_Jtag/digital_io[0]
-SPARE	    PA3		                D26           3             Caravel_csb/digital_io[3]
+SPARE	    PA0		                D26           0             Caravel_Jtag/digital_io[0]
+SPARE	    PA3		                D27           3             Caravel_csb/digital_io[3]
 ***********************************************************************/
 
 #define VARIANT_DIGITAL_PIN_MAP  { \
