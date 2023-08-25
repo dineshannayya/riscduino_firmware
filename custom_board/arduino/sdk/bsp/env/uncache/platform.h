@@ -94,6 +94,7 @@
 #define IOF0_SPI_CS3_ENB        _AC(0x00004000, UL)
 #define IOF0_WIRE_ENB           _AC(0x00008000, UL)
 #define IOF0_USB_ENB            _AC(0x00010000, UL)
+#define IOF0_TAP_ENB            _AC(0x40000000, UL)
 #define IOF0_MUART_ENB          _AC(0x80000000, UL)
 
 // RESET CONTROL
@@ -166,16 +167,86 @@
 
 // GPIO Port Defination
 // GPIO OUTPUT PORT
-#define OPORTA  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+0);
-#define OPORTB  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+1);
-#define OPORTC  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+2);
-#define OPORTD  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+3);
+#define PORTA  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+0);
+#define PORTA7  7
+#define PORTA6  6
+#define PORTA5  5
+#define PORTA4  4
+#define PORTA3  3
+#define PORTA2  2
+#define PORTA1  1
+#define PORTA0  0
+
+#define PORTB  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+1);
+#define PORTB7  7
+#define PORTB6  6
+#define PORTB5  5
+#define PORTB4  4
+#define PORTB3  3
+#define PORTB2  2
+#define PORTB1  1
+#define PORTB0  0
+
+#define PORTC  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+2);
+#define PORTC7  7
+#define PORTC6  6
+#define PORTC5  5
+#define PORTC4  4
+#define PORTC3  3
+#define PORTC2  2
+#define PORTC1  1
+#define PORTC0  0
+
+#define PORTD  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+3);
+#define PORTD7  7
+#define PORTD6  6
+#define PORTD5  5
+#define PORTD4  4
+#define PORTD3  3
+#define PORTD2  2
+#define PORTD1  1
+#define PORTD0  0
 
 // GPIO IN PORT
-#define IPORTA  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+0);
-#define IPORTB  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+1);
-#define IPORTC  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+2);
-#define IPORTD  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+3);
+#define PINA  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+0);
+#define PINA7  7
+#define PINA6  6
+#define PINA5  5
+#define PINA4  4
+#define PINA3  3
+#define PINA2  2
+#define PINA1  1
+#define PINA0  0
+
+#define PINB  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+1);
+#define PINB7  7
+#define PINB6  6
+#define PINB5  5
+#define PINB4  4
+#define PINB3  3
+#define PINB2  2
+#define PINB1  1
+#define PINB0  0
+
+#define PINC  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+2);
+#define PINC7  7
+#define PINC6  6
+#define PINC5  5
+#define PINC4  4
+#define PINC3  3
+#define PINC2  2
+#define PINC1  1
+#define PINC0  0
+
+#define PIND  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+3);
+#define PIND7  7
+#define PIND6  6
+#define PIND5  5
+#define PIND4  4
+#define PIND3  3
+#define PIND2  2
+#define PIND1  1
+#define PIND0  0
 
 // Misc
 

@@ -68,10 +68,10 @@
 
      // LCD control lines:
      // RD (read), WR (write), CD (command/data), CS (chip select)
-     #define RD_PORT OPORTC /*pin A0 */
-     #define WR_PORT OPORTC /*pin A1 */
-     #define CD_PORT OPORTC /*pin A2 */
-     #define CS_PORT OPORTC /*pin A3 */
+     #define RD_PORT PORTC /*pin A0 */
+     #define WR_PORT PORTC /*pin A1 */
+     #define CD_PORT PORTC /*pin A2 */
+     #define CS_PORT PORTC /*pin A3 */
      #define RD_MASK B00000001
      #define WR_MASK B00000010
      #define CD_MASK B00000100
