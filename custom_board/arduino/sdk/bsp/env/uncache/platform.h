@@ -167,7 +167,7 @@
 
 // GPIO Port Defination
 // GPIO OUTPUT PORT
-#define PORTA  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+0);
+#define PORTA  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+0)
 #define PORTA7  7
 #define PORTA6  6
 #define PORTA5  5
@@ -177,7 +177,7 @@
 #define PORTA1  1
 #define PORTA0  0
 
-#define PORTB  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+1);
+#define PORTB  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+1)
 #define PORTB7  7
 #define PORTB6  6
 #define PORTB5  5
@@ -187,7 +187,7 @@
 #define PORTB1  1
 #define PORTB0  0
 
-#define PORTC  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+2);
+#define PORTC  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+2)
 #define PORTC7  7
 #define PORTC6  6
 #define PORTC5  5
@@ -197,7 +197,7 @@
 #define PORTC1  1
 #define PORTC0  0
 
-#define PORTD  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+3);
+#define PORTD  _REG8(GPIO_BASE_ADDR, GPIO_ODATA+3)
 #define PORTD7  7
 #define PORTD6  6
 #define PORTD5  5
@@ -208,7 +208,7 @@
 #define PORTD0  0
 
 // GPIO IN PORT
-#define PINA  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+0);
+#define PINA  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+0)
 #define PINA7  7
 #define PINA6  6
 #define PINA5  5
@@ -218,7 +218,7 @@
 #define PINA1  1
 #define PINA0  0
 
-#define PINB  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+1);
+#define PINB  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+1)
 #define PINB7  7
 #define PINB6  6
 #define PINB5  5
@@ -228,7 +228,7 @@
 #define PINB1  1
 #define PINB0  0
 
-#define PINC  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+2);
+#define PINC  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+2)
 #define PINC7  7
 #define PINC6  6
 #define PINC5  5
@@ -238,7 +238,7 @@
 #define PINC1  1
 #define PINC0  0
 
-#define PIND  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+3);
+#define PIND  _REG8(GPIO_BASE_ADDR, GPIO_IDATA+3)
 #define PIND7  7
 #define PIND6  6
 #define PIND5  5
