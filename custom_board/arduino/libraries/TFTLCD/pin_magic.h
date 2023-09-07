@@ -55,11 +55,11 @@
 // equivalent to two NOPs each, final NOP burns the 7th cycle, and the
 // last line is a radioactive mutant emoticon.
 #define DELAY7                                                                 \
-  asm volatile("rjmp .+0"                                                      \
+  asm volatile("nop"                                                      \
                "\n\t"                                                          \
-               "rjmp .+0"                                                      \
+               "nop"                                                      \
                "\n\t"                                                          \
-               "rjmp .+0"                                                      \
+               "nop"                                                      \
                "\n\t"                                                          \
                "nop"                                                           \
                "\n" ::);

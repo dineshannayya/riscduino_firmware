@@ -22,6 +22,8 @@
 #endif
 
 
+
+
 /* LEDs */
 #define PIN_LED_13          13
 #define PIN_LED             3
@@ -125,6 +127,10 @@ SPARE	    PA3		                D26           3             Caravel_csb/digital_i
 #define VARIANT_PWM_LIST {(volatile void *) PWM0_BASE_ADDR, \
       (volatile void *) PWM1_BASE_ADDR, \
       (volatile void *) PWM2_BASE_ADDR}
+
+
+
+
 
 #define VARIANT_NUM_WS281X (4)
 #define VARIANT_NUM_PWM (3)

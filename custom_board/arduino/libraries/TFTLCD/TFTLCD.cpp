@@ -10,7 +10,7 @@
 #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
 #define pgm_read_word(addr) (*(const unsigned short *)(addr))
 #endif
-#ifdef __AVR__
+#if defined(__AVR__) || defined(RISCDUINO_UNO)
 #include <avr/pgmspace.h>
 #endif
 #include "TFTLCD.h"
@@ -42,7 +42,7 @@ TFTLCD::TFTLCD(uint8_t cs, uint8_t cd, uint8_t wr, uint8_t rd,
 #ifndef USE_ADAFRUIT_SHIELD_PINOUT
   // Convert pin numbers to registers and bitmasks
   _reset = reset;
-#ifdef __AVR__
+#if defined(__AVR__) || defined(RISCDUINO_UNO)
   csPort = portOutputRegister(digitalPinToPort(cs));
   cdPort = portOutputRegister(digitalPinToPort(cd));
   wrPort = portOutputRegister(digitalPinToPort(wr));
@@ -62,7 +62,7 @@ TFTLCD::TFTLCD(uint8_t cs, uint8_t cd, uint8_t wr, uint8_t rd,
   cdPinUnset = ~cdPinSet;
   wrPinUnset = ~wrPinSet;
   rdPinUnset = ~rdPinSet;
-#ifdef __AVR__
+#if defined(__AVR__) || defined(RISCDUINO_UNO)
   *csPort |= csPinSet; // Set all control bits to HIGH (idle)
   *cdPort |= cdPinSet; // Signals are ACTIVE LOW
   *wrPort |= wrPinSet;

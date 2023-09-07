@@ -13,6 +13,10 @@ PHDRS
 {
   flash PT_LOAD;
   ram_init PT_LOAD;
+  ram_init1 PT_LOAD;
+  ram_init2 PT_LOAD;
+  ram_init3 PT_LOAD;
+  ram_init4 PT_LOAD;
   ram PT_NULL;
 }
 
@@ -131,7 +135,7 @@ SECTIONS
   {
     *(.data .data.*)
     *(.gnu.linkonce.d.*)
-  } >ram AT>flash :ram_init
+  } >ram AT>flash :ram_init2
 
   .srodata        :
   {
@@ -141,13 +145,13 @@ SECTIONS
     *(.srodata.cst4)
     *(.srodata.cst2)
     *(.srodata .srodata.*)
-  } >ram AT>flash :ram_init
+  } >ram AT>flash :ram_init3
 
   .sdata          :
   {
     *(.sdata .sdata.*)
     *(.gnu.linkonce.s.*)
-  } >ram AT>flash :ram_init
+  } >ram AT>flash :ram_init4
 
   . = ALIGN(4);
   PROVIDE( _edata = . );
