@@ -184,7 +184,7 @@ void loop(void)
             }
         }
         char buf[20];
-        //sprintf(buf, "%02d:%02d:%02d", hh, mm, ss);
+        sprintf(buf, "%02d:%02d:%02d", hh, mm, ss);
         tft.fillRect(108, 10 * 18 + 3, 6 * 18, 18, BLACK);
         tft.setCursor(128, 187 + ADJ_BASELINE);
         tft.print(buf);
