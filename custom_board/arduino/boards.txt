@@ -40,7 +40,7 @@ uno.upload.maximum_data_size=2048
 uno.upload.speed=57600
 
 
-uno.build.mcu=rv32imac
+uno.build.mcu=rv32imc
 uno.build.f_cpu=10000000L
 uno.build.board=RISCDUINO_UNO
 uno.build.core=riscduino
