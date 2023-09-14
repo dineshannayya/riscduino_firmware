@@ -1,7 +1,10 @@
 // See LICENSE for license details.
 
-#ifndef _SIFIVE_PWM_H
-#define _SIFIVE_PWM_H
+#ifndef _RISCDUINO_PWM_H
+#define _RISCDUINO_PWM_H
+
+// PWM Logic from MPW-7 is different than MPW-6
+#if (RISCDUINO_SOC >= 122023)
 
 /* Register offsets */
 
@@ -34,4 +37,13 @@
 #define PWM_CFG_CMP2IP      0x40000000
 #define PWM_CFG_CMP3IP      0x80000000
 
-#endif /* _SIFIVE_PWM_H */
+#else
+// FOR MPW-6 case
+
+#define PWM_CFG_LOW_BASE        0x04
+#define PWM_CFG_HIGH_BASE       0x06
+
+
+#endif
+
+#endif /* _RISCDUINO_PWM_H */

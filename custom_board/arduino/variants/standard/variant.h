@@ -64,10 +64,10 @@ ATMEGA328   Functionality           ARDUINO PIN No    Riscduino       Caravel Pi
   Pin                                 Pin No           GPIO No
 Pin-2	    PD0/RXD[0]	                 D0	           24           digital_io[6]
 Pin-3	    PD1/TXD[0]	                 D1	           25           digital_io[7]/analog_io[0]
-Pin-4	    PD2/RXD[1]/INT0	             D2	           26           digital_io[8]/analog_io[1]
+Pin-4	    PD2/RXD[1]/INT0	         D2	           26           digital_io[8]/analog_io[1]
 Pin-5	    PD3/INT1/OC2B(PWM0)	         D3	           27           digital_io[9]/analog_io[2]
 Pin-6	    PD4/TXD[1]	                 D4	           28           digital_io[10]/analog_io[3]
-Pin-11	    PD5/SS[3]/OC0B(PWM1)/T1	     D5	           29           digital_io[13]/analog_io[6]
+Pin-11	    PD5/SS[3]/OC0B(PWM1)/T1	 D5	           29           digital_io[13]/analog_io[6]
 Pin-12	    PD6/SS[2]/OC0A(PWM2)/AIN0	 D6	           30           digital_io[14]/analog_io[7]
 Pin-13	    PD7/A1N1	                 D7	           31           digital_io[15]/analog_io[8]
 Pin-14	    PB0/CLKO/ICP1	             D8	            8           digital_io[16]/analog_io[9]
@@ -90,34 +90,34 @@ SPARE	    PA2		                    D24           2             Caravel_sdi/digit
 SPARE	    PA4		                    D25           4             Caravel_sck/digital_io[4]
 
 // Future Use
-SPARE	    PA0		                D26           0             Caravel_Jtag/digital_io[0]
-SPARE	    PA3		                D27           3             Caravel_csb/digital_io[3]
+SPARE	    PA0		                D23           0             Caravel_Jtag/digital_io[0]
+SPARE	    PA3		                D26           3             Caravel_csb/digital_io[3]
 ***********************************************************************/
 
 #define VARIANT_DIGITAL_PIN_MAP  { \
-    {.io_port = 0, .bit_pos = 24, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0}, \
+        {.io_port = 0, .bit_pos = 24, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0}, \
 	{.io_port = 0, .bit_pos = 25, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0}, \
 	{.io_port = 0, .bit_pos = 26, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0}, \
-	{.io_port = 0, .bit_pos = 27, .pwm_num = 1,   .pwm_cmp_num = 1, .ws281x_num = 1}, \
-	{.io_port = 0, .bit_pos = 28, .pwm_num = 1,   .pwm_cmp_num = 0, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 27, .pwm_num = 0,   .pwm_cmp_num = 1, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 28, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 1}, \
 	{.io_port = 0, .bit_pos = 29, .pwm_num = 1,   .pwm_cmp_num = 2, .ws281x_num = 0}, \
-	{.io_port = 0, .bit_pos = 30, .pwm_num = 1,   .pwm_cmp_num = 3, .ws281x_num = 0}, \
+	{.io_port = 0, .bit_pos = 30, .pwm_num = 2,   .pwm_cmp_num = 3, .ws281x_num = 0}, \
 	{.io_port = 0, .bit_pos = 31, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0}, \
-	{.io_port = 0, .bit_pos = 8,  .pwm_num = 0,   .pwm_cmp_num = 0, .ws281x_num = 0}, \
-	{.io_port = 0, .bit_pos = 9,  .pwm_num = 0,   .pwm_cmp_num = 1, .ws281x_num = 1}, \
-	{.io_port = 0, .bit_pos = 10, .pwm_num = 0,   .pwm_cmp_num = 2, .ws281x_num = 1}, \
-	{.io_port = 0, .bit_pos = 11, .pwm_num = 0,   .pwm_cmp_num = 3, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 8,  .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0}, \
+	{.io_port = 0, .bit_pos = 9,  .pwm_num = 3,   .pwm_cmp_num = 1, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 10, .pwm_num = 4,   .pwm_cmp_num = 2, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 11, .pwm_num = 5,   .pwm_cmp_num = 3, .ws281x_num = 1}, \
 	{.io_port = 0, .bit_pos = 12, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 1}, \
 	{.io_port = 0, .bit_pos = 13, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
 	{.io_port = 0, .bit_pos = 16, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
 	{.io_port = 0, .bit_pos = 17, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
-	{.io_port = 0, .bit_pos = 18, .pwm_num = 2,   .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
-	{.io_port = 0, .bit_pos = 19, .pwm_num = 2,   .pwm_cmp_num = 1, .ws281x_num = 0xF}, \
-	{.io_port = 0, .bit_pos = 20, .pwm_num = 2,   .pwm_cmp_num = 2, .ws281x_num = 0xF}, \
-	{.io_port = 0, .bit_pos = 21, .pwm_num = 2,   .pwm_cmp_num = 2, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 18, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 19, .pwm_num = 0xF, .pwm_cmp_num = 1, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 20, .pwm_num = 0xF, .pwm_cmp_num = 2, .ws281x_num = 0xF}, \
+	{.io_port = 0, .bit_pos = 21, .pwm_num = 0xF, .pwm_cmp_num = 2, .ws281x_num = 0xF}, \
 	{.io_port = 0, .bit_pos = 22, .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
-	{.io_port = 0, .bit_pos = 14, .pwm_num = 2,   .pwm_cmp_num = 2, .ws281x_num = 1}, \
-	{.io_port = 0, .bit_pos = 15, .pwm_num = 2,   .pwm_cmp_num = 2, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 14, .pwm_num = 0xF,  .pwm_cmp_num = 2, .ws281x_num = 1}, \
+	{.io_port = 0, .bit_pos = 15, .pwm_num = 0xF, .pwm_cmp_num = 2, .ws281x_num = 1}, \
 	{.io_port = 0, .bit_pos = 1,  .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
 	{.io_port = 0, .bit_pos = 2,  .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}, \
 	{.io_port = 0, .bit_pos = 4,  .pwm_num = 0xF, .pwm_cmp_num = 0, .ws281x_num = 0xF}}

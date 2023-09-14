@@ -59,6 +59,7 @@ void analogWrite(uint32_t pin, uint32_t ulValue)
   pwm_period = (1 << _writeResolution) - 1;
 
   
+ #if (RISCDUINO_SOC >= 122023) // for SOC from MPW-7 onwards
   // This also sets the scale to 0.
   if (!pwm_enabled[pwm_num]) {
     *((volatile uint32_t*) (variant_pwm[pwm_num] + PWM_CFG))   = 0;
@@ -76,10 +77,33 @@ void analogWrite(uint32_t pin, uint32_t ulValue)
     pwm_enabled_pin[pin] = 1;
   }
 
-  // On the FE300 Platform, the outputs are LOW until their comparator matches.
-  // So use the period subtracted from the specified value.
   *((volatile uint32_t*) (variant_pwm[pwm_num] + PWM_CMP0 + pwm_cmp_num*4)) =
     (ulValue > pwm_period) ? 0 : (pwm_period -  ulValue);
+
+ #else 
+
+  // This also sets the scale to 0.
+  if (!pwm_enabled[pwm_num]) {
+    // Since PWM register does not reset immeditaly with change, we are reducing the
+    // Timing tick from 1us to 200ns to run the PWM logic run 5 time faster - this timer
+    // value need to corrected for MPW-7 onward - Atten - Dinesh A
+    *((volatile uint32_t*)(TIMER_BASE_ADDR+TIMER_GLBL_CFG)) = 0x1;
+    *((volatile uint32_t*)(GLBL_BASE_ADDR+GLBL_MULTI_FUNC))  |= 1 << pwm_num;
+
+    // Configure PWM Port for one Time
+    *((volatile uint32_t*)(GLBL_BASE_ADDR+GLBL_MULTI_FUNC))  |= 1 << pwm_num;
+    pwm_enabled[pwm_num] = 1;
+  }
+  
+  if (!pwm_enabled_pin[pin]) {
+    pwm_enabled_pin[pin] = 1;
+  }
+
+    *((volatile uint32_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_HIGH_BASE))   = ulValue & 0xFF;
+    *((volatile uint32_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_LOW_BASE))   = (255-ulValue-1) & 0xFF;
+
+
+ #endif
 
 }
 
