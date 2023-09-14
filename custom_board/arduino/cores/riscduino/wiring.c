@@ -33,7 +33,7 @@ const struct variant_pin_map_s variant_pin_map[] = VARIANT_DIGITAL_PIN_MAP;
 const uint32_t variant_pin_map_size = sizeof(variant_pin_map) / sizeof(struct variant_pin_map_s);
 
 const volatile void * variant_pwm[] = VARIANT_PWM_LIST;
-const uint32_t variant_pwm_size = sizeof(variant_pwm) / sizeof(uint32_t*);
+const uint32_t variant_pwm_size = VARIANT_NUM_PWM;
 
 // Efficient divide routines provided by Bruce Hoult on forums.sifive.com
 

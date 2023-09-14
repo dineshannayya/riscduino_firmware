@@ -133,7 +133,12 @@ SPARE	    PA3		                D26           3             Caravel_csb/digital_i
 
 
 #define VARIANT_NUM_WS281X (4)
-#define VARIANT_NUM_PWM (3)
+#if (RISCDUINO_SOC >= 122023)
+    #define VARIANT_NUM_PWM (3)
+#else // MPW-6 has 6 PWM
+    #define VARIANT_NUM_PWM (6)
+#endif
+
 #define VARIANT_NUM_SPI (1)
 // For interfacing with the onboard SPI Flash.
 #define VARIANT_NUM_QSPI (1)
