@@ -12,11 +12,11 @@ Download and install [Arduino IDE 2.0 tarball] (https://www.arduino.cc/en/softwa
 
 ### Installing Through the Arduino IDE ###
 
-This is supported for macOS and Linux.
+This is supported for Windows and Linux.
 
 1. Open the arduino-ide
 
-2. Go to <File> <Preference>
+2. Go to [File] [Preference]
 <table>
   <tr>
     <td  align="center"><img src="./docs/source/_static/Riscdunio-board-install-0.png" ></td>
@@ -24,7 +24,7 @@ This is supported for macOS and Linux.
 </table>
 
 3. Click on <Additional Board Manager URL>
-   Add the [https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/package_riscduino_index.json](https://github.com/dineshannayya/riscduino_board/raw/main/custom_board/package_riscduino_index.json)  
+   Add the [https://github.com/dineshannayya/riscduino_tools/raw/main/package_riscduino_index.json](https://github.com/dineshannayya/riscduino_tools/raw/main/package_riscduino_index.json)  
 <table>
   <tr>
     <td  align="center"><img src="./docs/source/_static/Riscduino-board-install-1.png" ></td>
