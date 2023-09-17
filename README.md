@@ -32,25 +32,21 @@ This is supported for Windows and Linux.
   </tr>
 </table>
 
-3. Close the arduino-ide  - To software to detect additional of new board URL
-
-4. Open the arduino-ide
-
-5. Search the riscduion under board manager
+4. Go to [Tools][Board][Board Manager] Search for riscduion under board manager
 <table>
   <tr>
     <td  align="center"><img src="./docs/source/_static/Riscduino-board-install-3.png" ></td>
   </tr>
 </table>
 
-6. Install the latest Riscduino
+5. Install the latest Riscduino
 <table>
   <tr>
     <td  align="center"><img src="./docs/source/_static/Riscduino-board-install-4.png" ></td>
   </tr>
 </table>
 
-7.  Select Your Board #
+6.  Select Your Board #
     Tools->Board-> Riscduino
  
 <table>
