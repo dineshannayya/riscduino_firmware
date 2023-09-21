@@ -83,12 +83,11 @@ void analogWrite(uint32_t pin, uint32_t ulValue)
  #else 
 
   // This also sets the scale to 0.
-  if (!pwm_enabled[pwm_num]) {
+  if (!pwm_enabled[pwm_num] && ulValue != 0xFF && ulValue != 0x00) {
     // Since PWM register does not reset immeditaly with change, we are reducing the
     // Timing tick from 1us to 200ns to run the PWM logic run 5 time faster - this timer
     // value need to corrected for MPW-7 onward - Atten - Dinesh A
     *((volatile uint32_t*)(TIMER_BASE_ADDR+TIMER_GLBL_CFG)) = 0x1;
-    *((volatile uint32_t*)(GLBL_BASE_ADDR+GLBL_MULTI_FUNC))  |= 1 << pwm_num;
 
     // Configure PWM Port for one Time
     *((volatile uint32_t*)(GLBL_BASE_ADDR+GLBL_MULTI_FUNC))  |= 1 << pwm_num;
@@ -99,8 +98,19 @@ void analogWrite(uint32_t pin, uint32_t ulValue)
     pwm_enabled_pin[pin] = 1;
   }
 
-    *((volatile uint32_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_HIGH_BASE))   = ulValue & 0xFF;
-    *((volatile uint32_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_LOW_BASE))   = (255-ulValue-1) & 0xFF;
+    // Analog value of 0xFF and 0x00 is not handled correctly, we are converting it to digital pads
+    if(ulValue == 0xFF) {
+       digitalWrite(pin, HIGH);
+       *((volatile uint32_t*)(GLBL_BASE_ADDR+GLBL_MULTI_FUNC)) &= ~(1 << pwm_num);
+       pwm_enabled[pwm_num] = 0;
+    } else if(ulValue == 0x00) {
+       digitalWrite(pin, LOW);
+       *((volatile uint32_t*)(GLBL_BASE_ADDR+GLBL_MULTI_FUNC))  &= ~(1 << pwm_num);
+       pwm_enabled[pwm_num] = 0;
+    } else {
+       *((volatile uint16_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_HIGH_BASE))   = ulValue & 0xFF;
+       *((volatile uint16_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_LOW_BASE))   = (255-ulValue) & 0xFF;
+    }
 
 
  #endif
