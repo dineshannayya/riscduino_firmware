@@ -108,8 +108,8 @@ void analogWrite(uint32_t pin, uint32_t ulValue)
        *((volatile uint32_t*)(GLBL_BASE_ADDR+GLBL_MULTI_FUNC))  &= ~(1 << pwm_num);
        pwm_enabled[pwm_num] = 0;
     } else {
-       *((volatile uint16_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_HIGH_BASE))   = ulValue & 0xFF;
-       *((volatile uint16_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_LOW_BASE))   = (255-ulValue) & 0xFF;
+       //*((volatile uint16_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_HIGH_BASE))   = ulValue & 0xFF;
+       *((volatile uint16_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_LOW_BASE))   = ((ulValue & 0xFF) << 16) | ((255-ulValue) & 0xFF);
     }
 
 
