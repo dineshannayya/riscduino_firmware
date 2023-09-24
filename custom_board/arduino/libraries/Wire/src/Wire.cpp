@@ -31,17 +31,17 @@ extern "C" {
 
 // Initialize Class Variables //////////////////////////////////////////////////
 
-uint8_t TwoWire::rxBuffer[BUFFER_LENGTH];
-uint8_t TwoWire::rxBufferIndex = 0;
-uint8_t TwoWire::rxBufferLength = 0;
-uint8_t TwoWire::status = 0;
+uint32_t TwoWire::rxBuffer[BUFFER_LENGTH];
+uint32_t TwoWire::rxBufferIndex = 0;
+uint32_t TwoWire::rxBufferLength = 0;
+uint32_t TwoWire::status = 0;
 
-uint8_t TwoWire::txAddress = 0;
-uint8_t TwoWire::txBuffer[BUFFER_LENGTH];
-uint8_t TwoWire::txBufferIndex = 0;
-uint8_t TwoWire::txBufferLength = 0;
+uint32_t TwoWire::txAddress = 0;
+uint32_t TwoWire::txBuffer[BUFFER_LENGTH];
+uint32_t TwoWire::txBufferIndex = 0;
+uint32_t TwoWire::txBufferLength = 0;
 
-uint8_t TwoWire::transmitting = 0;
+uint32_t TwoWire::transmitting = 0;
 void (*TwoWire::user_onRequest)(void);
 void (*TwoWire::user_onReceive)(int);
 
@@ -400,7 +400,7 @@ void TwoWire::onRequest( void (*function)(void) )
   user_onRequest = function;
 }
 
-uint8_t TwoWire:: readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sendStop)
+uint8_t TwoWire:: readFrom(uint8_t address, uint32_t* data, uint8_t length, uint8_t sendStop)
 {
   uint8_t i;
 
@@ -457,7 +457,7 @@ uint8_t TwoWire:: readByte() {
  *          4 .. other twi error (lost bus arbitration, bus error, ..)
  *          5 .. timeout
  */
-uint8_t TwoWire::writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait, uint8_t sendStop)
+uint8_t TwoWire::writeTo(uint8_t address, uint32_t* data, uint8_t length, uint8_t wait, uint8_t sendStop)
 {
   volatile int32_t x;
   uint8_t i;
