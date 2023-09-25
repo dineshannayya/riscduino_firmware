@@ -2,7 +2,10 @@
 Repository for storing Arduino related files and custom board definition.
 This repository allows you to program Riscduino boards using the Arduino IDE.
 
-# Setup #
+# Youtube Video on Arduino IDE integration #
+*  https://www.youtube.com/watch?v=7_vQJfD9OVo
+
+# Manual Setup #
 
 ## Install Arduino IDE ##
 
