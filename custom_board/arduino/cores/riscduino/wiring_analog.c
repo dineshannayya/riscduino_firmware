@@ -7,8 +7,8 @@ __BEGIN_DECLS
 static int _readResolution = 10;
 static int _writeResolution = 8;
 
-static uint8_t pwm_enabled[VARIANT_NUM_PWM];
-static int8_t pwm_enabled_pin[VARIANT_NUM_PIN];
+static uint32_t pwm_enabled[VARIANT_NUM_PWM];
+static uint32_t pwm_enabled_pin[VARIANT_NUM_PIN];
 
 void analogReadResolution(int res) {
 	_readResolution = res;
@@ -20,7 +20,7 @@ void analogWriteResolution(int res) {
 
 void analogWritePhase(uint32_t pin, uint32_t phase)
 {
-  int8_t pwm_num;
+  int32_t pwm_num;
   
   if(pin >= variant_pin_map_size)
     return;
@@ -41,8 +41,8 @@ void analogOutputInit( void )
 void analogWrite(uint32_t pin, uint32_t ulValue)
 {
 
-  volatile uint8_t pwm_num;
-  volatile uint8_t pwm_cmp_num;
+  volatile uint32_t pwm_num;
+  volatile uint32_t pwm_cmp_num;
   uint32_t pwm_period;
   
   if (pin > variant_pin_map_size) {
@@ -108,8 +108,8 @@ void analogWrite(uint32_t pin, uint32_t ulValue)
        *((volatile uint32_t*)(GLBL_BASE_ADDR+GLBL_MULTI_FUNC))  &= ~(1 << pwm_num);
        pwm_enabled[pwm_num] = 0;
     } else {
-       //*((volatile uint16_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_HIGH_BASE))   = ulValue & 0xFF;
-       *((volatile uint32_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_LOW_BASE))   = ((ulValue & 0xFF) << 16) | ((255-ulValue) & 0xFF);
+       //*((volatile uint16_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_HIGH_BASE))   = ulValue & pwm_period;
+       *((volatile uint32_t*) (pwm_num*4 + PWM_BASE_ADDR +PWM_CFG_LOW_BASE))   = ((ulValue & pwm_period) << 16) | ((pwm_period-ulValue) & 0xFF);
     }
 
 

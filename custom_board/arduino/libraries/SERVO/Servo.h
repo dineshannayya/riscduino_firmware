@@ -1,14 +1,14 @@
-#ifndef _SERVO_VEGA__
-#define _SERVO_VEGA__
+#ifndef _SERVO_RISCDUINO__
+#define _SERVO_RISCDUINO__
 
 #include "variant.h"
 #include <stdio.h>
 #include "platform.h"
 
 #define SERVO_DELAY	5000
-#define SERVO_MIN	50000
-#define SERVO_MAX	250000
-#define SERVO_PERIOD	1500000 //For 50Hz, thejas soc 40mHz, period=CPU_FREQ/HZ
+#define SERVO_MIN	5
+#define SERVO_MAX	10
+#define SERVO_PERIOD	100 //In MPW-6, Each Step is 0.2ms for 20ms => 100 Step
 
 
 class Servo {
