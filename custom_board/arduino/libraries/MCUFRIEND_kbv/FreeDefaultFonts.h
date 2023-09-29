@@ -1,5 +1,5 @@
 // generate FreeFont from UTFT font
-const uint32_t FreeSmallFontBitmaps[] PROGMEM = {
+const uint8_t FreeSmallFontBitmaps[] PROGMEM = {
 // 0x0 [0x20 '.']
 
 // 1x8 [0x21 '!']
@@ -289,12 +289,12 @@ const GFXglyph FreeSmallFontGlyphs[] PROGMEM = {
     { 411,  6,  3,  8,  0, -12 }, // 0x7E '~'
 };
 const GFXfont FreeSmallFont PROGMEM = {
-    (uint32_t  *)FreeSmallFontBitmaps,
+    (uint8_t  *)FreeSmallFontBitmaps,
     (GFXglyph *)FreeSmallFontGlyphs,
     32, 126, 12
 };
 // FreeSmallFont bitmap size = 414 [1079] [1239]
-const uint32_t FreeBigFontBitmaps[] PROGMEM = {
+const uint8_t FreeBigFontBitmaps[] PROGMEM = {
 // 0x0 [0x20 '.']
 
 // 5x13 [0x21 '!']
@@ -599,12 +599,12 @@ const GFXglyph FreeBigFontGlyphs[] PROGMEM = {
     {1192, 12,  4, 16,  2, -14 }, // 0x7E '~'
 };
 const GFXfont FreeBigFont PROGMEM = {
-    (uint32_t  *)FreeBigFontBitmaps,
+    (uint8_t  *)FreeBigFontBitmaps,
     (GFXglyph *)FreeBigFontGlyphs,
     32, 126, 16
 };
 // FreeBigFont bitmap size = 1198 [1863] [3139]
-const uint32_t FreeSevenSegNumFontBitmaps[] PROGMEM = {
+const uint8_t FreeSevenSegNumFontBitmaps[] PROGMEM = {
 // 27x46 [0x30 '0']
 0x03,0xFF,0xF8,0x00,0xFF,0xFF,0x80,0x3F,0xFF,0xF8,0x03,0xFF,0xFE,0xC3,0x3F,0xFF,
 0xBC,0xF0,0x00,0x0F,0xFF,0x00,0x01,0xFF,0xE0,0x00,0x3F,0xFC,0x00,0x07,0xFF,0x80,
@@ -717,7 +717,7 @@ const GFXglyph FreeSevenSegNumFontGlyphs[] PROGMEM = {
     {1207, 27, 46, 32,  2, -48 }, // 0x39 '9'
 };
 const GFXfont FreeSevenSegNumFont PROGMEM = {
-    (uint32_t  *)FreeSevenSegNumFontBitmaps,
+    (uint8_t  *)FreeSevenSegNumFontBitmaps,
     (GFXglyph *)FreeSevenSegNumFontGlyphs,
     48, 57, 50
 };

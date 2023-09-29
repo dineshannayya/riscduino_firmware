@@ -46,7 +46,7 @@ class UTFTGLUE : public MCUFRIEND_kbv
              : MCUFRIEND_kbv(CS, RS, WR, RD, RST) { _model_ID = model_ID; }
     void InitLCD(byte orientation=LANDSCAPE) {
         MCUFRIEND_kbv::reset();
-        uint32_t ID = MCUFRIEND_kbv::readID();
+        uint16_t ID = MCUFRIEND_kbv::readID();
 //       if (ID == 0) ID = 0x9341;        //DealExtreme with EXTC=0
 //       if (ID == 0x8989) ID = 0x1289;
 //       if (ID == 0xD3D3) ID = 0x9481;   //write-only controller
@@ -133,13 +133,13 @@ class UTFTGLUE : public MCUFRIEND_kbv
  *  
  */
 
-int *dtostrf( float val,  int8_t char_num, uint8_t precision, int *chr_buffer)
+char *dtostrf( float val,  int8_t char_num, uint8_t precision, char *chr_buffer)
 {
   int       right_j;
   int       i, j ;
   float     r_val;
   long      i_val;
-  int      c, c_sign;
+  char      c, c_sign;
 
 
   // check the sign
@@ -268,7 +268,7 @@ int *dtostrf( float val,  int8_t char_num, uint8_t precision, int *chr_buffer)
 
 
     void printNumF(double num, byte dec, int x, int y, char divider='.', int length=0, char filler=' ') {
-        int buf[20];
+        char buf[20];
         dtostrf(num, length, dec, buf); 
         for (int i = 0; buf[i] == ' '; i++) buf[i] = filler;
         settextcursor(buf, x, y, length * _dig_wid * MCUFRIEND_kbv::textsize_x); 
@@ -288,10 +288,10 @@ int *dtostrf( float val,  int8_t char_num, uint8_t precision, int *chr_buffer)
             _dig_wid = x;   //xAdvance
         }
     }
-    void drawBitmap(int x, int y, int sx, int sy, const uint32_t *data, int scale=1) {
+    void drawBitmap(int x, int y, int sx, int sy, const uint16_t *data, int scale=1) {
         uint16_t color;
         MCUFRIEND_kbv::setAddrWindow(x, y, x + sx*scale - 1, y + sy*scale - 1);
-        if (scale == 1) MCUFRIEND_kbv::pushColors((const uint32_t*)data, sx * sy, 1);
+        if (scale == 1) MCUFRIEND_kbv::pushColors((const uint8_t*)data, sx * sy, 1);
         else {
             for (int row = 0; row < sy; row++) {
                 for (int col = 0; col < sx; col++) {
@@ -310,18 +310,18 @@ int *dtostrf( float val,  int8_t char_num, uint8_t precision, int *chr_buffer)
 	void	setBrightness(byte br) {}
 //  void LCD_Write_DATA(char VH,char VL);
 //  void dispBitmap(File inFile);
-    uint32_t _ascend, _descend, _dig_wid;
-    uint32_t _model_ID;
+    uint8_t _ascend, _descend, _dig_wid;
+    uint16_t _model_ID;
 
     protected:
-    uint32_t _fcolor;
-    uint32_t _bcolor;
+    uint16_t _fcolor;
+    uint16_t _bcolor;
 //    uint8_t _ascend, _descend, _dig_wid;
-    uint32_t _radius;
-    uint32_t _orient;
-    void settextcursor(int *st, int x, int y, int pad = 0) {
-        int32_t pos, x1, y1;
-        uint32_t len, w, h;
+    uint8_t _radius;
+    uint8_t _orient;
+    void settextcursor(char *st, int x, int y, int pad = 0) {
+        int16_t pos, x1, y1;
+        uint16_t len, w, h;
         bool is_gfx = (MCUFRIEND_kbv::gfxFont != NULL);
         getTextBounds(st, 0, 0, &x1, &y1, &w, &h);   //always
         len = x1 + w + 0;    // assumes the final right padding = 1.

@@ -1,5 +1,5 @@
 // generate FreeFont from UTFT font
-const uint32_t FreeSevenSegNumFontPlusPlusBitmaps[] PROGMEM = {
+const uint8_t FreeSevenSegNumFontPlusPlusBitmaps[] PROGMEM = {
     // 7x7 [0x2E '.']
     0x38, 0xFB, 0xFF, 0xFF, 0xEF, 0x8E, 0x00,
     // 0x0 [0x2F '/']
@@ -123,7 +123,7 @@ const GFXglyph FreeSevenSegNumFontPlusPlusGlyphs[] PROGMEM = {
     {1370,  7, 28, 32, 14, -38 }, // 0x3A ':'
 };
 const GFXfont FreeSevenSegNumFontPlusPlus PROGMEM = {
-    (uint32_t  *)FreeSevenSegNumFontPlusPlusBitmaps,
+    (uint8_t  *)FreeSevenSegNumFontPlusPlusBitmaps,
     (GFXglyph *)FreeSevenSegNumFontPlusPlusGlyphs,
     46, 59, 50
 };

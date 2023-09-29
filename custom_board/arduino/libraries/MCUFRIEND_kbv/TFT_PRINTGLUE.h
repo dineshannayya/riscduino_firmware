@@ -65,26 +65,26 @@ class TFT_PRINTGLUE : public MCUFRIEND_kbv
             _first = true;
         }
 
-        void pushColors(uint32_t *data, uint16_t len)
+        void pushColors(uint8_t *data, uint16_t len)
         {
-            MCUFRIEND_kbv::pushColors((uint32_t*)data, len, _first);
+            MCUFRIEND_kbv::pushColors((uint8_t*)data, len, _first);
             _first = false;
         }
 
-        void pushColors(uint32_t *data, uint8_t len)
+        void pushColors(uint16_t *data, uint8_t len)
         {
-            MCUFRIEND_kbv::pushColors((uint32_t*)data, len, _first);
+            MCUFRIEND_kbv::pushColors((uint16_t*)data, len, _first);
             _first = false;
         }
 
-        void pushColors(uint32_t *data, uint16_t len, int first)
+        void pushColors(uint16_t *data, uint16_t len, int first)
         {
-            MCUFRIEND_kbv::pushColors((uint32_t*)data, len, first);
+            MCUFRIEND_kbv::pushColors((uint16_t*)data, len, first);
         }
 
         void pushColor(uint16_t color)
         {
-            uint32_t c = color;
+            uint16_t c = color;
             MCUFRIEND_kbv::pushColors(&c, 1, _first);
             _first = false;
         }
@@ -119,28 +119,28 @@ class TFT_PRINTGLUE : public MCUFRIEND_kbv
 
         int16_t drawNumber(long long_num, int16_t poX, int16_t poY, uint8_t idx)
         {
-            int buf[12];
+            char buf[12];
             ltoa(long_num, buf, 10);
             return drawString(buf, poX, poY, idx);
         }
 
         int16_t drawChar(char c, int16_t poX, int16_t poY, uint8_t idx)
         {
-            int buf[2];
+            char buf[2];
             buf[0] = c;
             buf[1] = 0;
             return drawString(buf, poX, poY, idx);
         }
 
-        int16_t drawString(const int *string, int16_t poX, int16_t poY, uint8_t idx)
+        int16_t drawString(const char *string, int16_t poX, int16_t poY, uint8_t idx)
         {
-            int32_t x1, y1;
-            uint32_t w, h;
+            int16_t x1, y1;
+            uint16_t w, h;
             setTextFont(idx);
             getTextBounds(string, 0, 50, &x1, &y1, &w, &h);   //assume no newlines
             w += x1;
             x1 = poX;
-            uint32_t xpad = (_padding > w) ? _padding : w;
+            uint16_t xpad = (_padding > w) ? _padding : w;
             switch (_datum) {
                 case TC_DATUM: 
                 case MC_DATUM: 
@@ -162,25 +162,25 @@ class TFT_PRINTGLUE : public MCUFRIEND_kbv
             print(string);
             return w;
         }
-        int16_t   drawCentreString(const int *string, int16_t poX, int16_t poY, uint8_t idx)
+        int16_t   drawCentreString(const char *string, int16_t poX, int16_t poY, uint8_t idx)
         {
-            uint32_t datum = _datum;
+            uint8_t datum = _datum;
             setTextDatum(TC_DATUM);
-            uint32_t len = drawString(string, poX, poY, idx);
+            uint16_t len = drawString(string, poX, poY, idx);
             setTextDatum(datum);
             return len;
         }
-        int16_t   drawRightString(const int *string, int16_t poX, int16_t poY, uint8_t idx)
+        int16_t   drawRightString(const char *string, int16_t poX, int16_t poY, uint8_t idx)
         {
-            uint32_t datum = _datum;
+            uint8_t datum = _datum;
             setTextDatum(TR_DATUM);
-            uint32_t len = drawString(string, poX, poY, idx);
+            uint16_t len = drawString(string, poX, poY, idx);
             setTextDatum(datum);
             return len;
         }
         int16_t drawFloat(float fp_num, uint8_t dec, int16_t poX, int16_t poY, int16_t idx)
         {
-            int buf[12];
+            char buf[12];
             dtostrf(fp_num, 0, dec, buf);
             return drawString(buf, poX, poY, idx);
         }
@@ -226,8 +226,8 @@ class TFT_PRINTGLUE : public MCUFRIEND_kbv
         }
 
     private:
-        uint32_t _ID, _padding;
-        uint32_t _font, _first, _datum, _ascent, _descent;
-        int32_t _ydatum;
+        uint16_t _ID, _padding;
+        uint8_t _font, _first, _datum, _ascent, _descent;
+        int8_t _ydatum;
         const GFXfont *_pfont;
 };
