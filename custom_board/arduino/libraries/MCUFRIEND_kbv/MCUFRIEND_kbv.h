@@ -25,10 +25,10 @@ class MCUFRIEND_kbv : public Adafruit_GFX {
 	void     begin(uint16_t ID = 0x9341);                       // you only need the constructor
 	virtual void     drawPixel(int16_t x, int16_t y, uint16_t color);  // and these three
 	void     WriteCmdData(uint16_t cmd, uint16_t dat);                 // ?public methods !!!
-    void     pushCommand(uint16_t cmd, uint8_t * block, int8_t N);
+    void     pushCommand(uint16_t cmd, uint32_t * block, int8_t N);
 	uint16_t color565(uint8_t r, uint8_t g, uint8_t b) { return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3); }
 	uint16_t readID(void);
-	virtual void     fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+	virtual void     fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
 	virtual void     drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) { fillRect(x, y, 1, h, color); }
 	virtual void     drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) { fillRect(x, y, w, 1, color); }
 	virtual void     fillScreen(uint16_t color)                                     { fillRect(0, 0, _width, _height, color); }
@@ -36,9 +36,9 @@ class MCUFRIEND_kbv : public Adafruit_GFX {
     virtual void     invertDisplay(bool i);
 
 	uint16_t readReg(uint16_t reg, int8_t index=0);
-	int16_t  readGRAM(int16_t x, int16_t y, uint16_t *block, int16_t w, int16_t h);
-	uint16_t readPixel(int16_t x, int16_t y) { uint16_t color; readGRAM(x, y, &color, 1, 1); return color; }
-	void     setAddrWindow(int16_t x, int16_t y, int16_t x1, int16_t y1);
+	int16_t  readGRAM(int16_t x, int16_t y, uint32_t *block, int16_t w, int16_t h);
+	uint16_t readPixel(int16_t x, int16_t y) { uint32_t color; readGRAM(x, y, &color, 1, 1); return color; }
+	void     setAddrWindow(int32_t x, int32_t y, int32_t x1, int32_t y1);
 	void     pushColors(uint16_t *block, int16_t n, bool first);
 	void     pushColors(uint8_t *block, int16_t n, bool first);
 	void     pushColors(const uint8_t *block, int16_t n, bool first, bool bigend = false);
@@ -47,10 +47,10 @@ class MCUFRIEND_kbv : public Adafruit_GFX {
     protected:
 	uint32_t readReg32(uint16_t reg);
 	uint32_t readReg40(uint16_t reg);
-    uint16_t  _lcd_xor, _lcd_capable;
+    uint32_t  _lcd_xor, _lcd_capable;
 
 	private:
-	uint16_t _lcd_ID, _lcd_rev, _lcd_madctl, _lcd_drivOut, _MC, _MP, _MW, _SC, _EC, _SP, _EP;
+	uint32_t _lcd_ID, _lcd_rev, _lcd_madctl, _lcd_drivOut, _MC, _MP, _MW, _SC, _EC, _SP, _EP;
 };
 
 // New color definitions.  thanks to Bodmer

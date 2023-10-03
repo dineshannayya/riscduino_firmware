@@ -86,17 +86,17 @@ void     println(double vd, int prec=2)   { printf("%0.2f\n", vd); }
   uint8_t getRotation(void);
 
  protected:
-  const int16_t
+  const int32_t
     WIDTH, HEIGHT;   // This is the 'raw' display w/h - never changes
-  int16_t
+  int32_t
     _width, _height, // Display w/h as modified by current rotation
     cursor_x, cursor_y;
-  uint16_t
+  uint32_t
     textcolor, textbgcolor;
-  uint8_t
+  uint32_t
     textsize,
     rotation;
-  boolean
+  unit32_t
     wrap; // If set, 'wrap' text at right edge of display
 
 #if defined USE_VFONTS

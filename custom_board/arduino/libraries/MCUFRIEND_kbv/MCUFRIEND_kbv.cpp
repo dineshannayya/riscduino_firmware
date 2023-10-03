@@ -1,39 +1,17 @@
-//#define SUPPORT_0139              //S6D0139 +280 bytes
 #define SUPPORT_0154              //S6D0154 +320 bytes
-//#define SUPPORT_05A1              //for S6D05A1
-//#define SUPPORT_1289              //SSD1289,SSD1297 (ID=0x9797) +626 bytes, 0.03s
-//#define SUPPORT_1580              //R61580 Untested
 #define SUPPORT_1963              //only works with 16BIT bus anyway
-//#define SUPPORT_4532              //LGDP4532 +120 bytes.  thanks Leodino
 #define SUPPORT_4535              //LGDP4535 +180 bytes
 #define SUPPORT_68140             //RM68140 +52 bytes defaults to PIXFMT=0x55
-//#define SUPPORT_7735
 #define SUPPORT_7781              //ST7781 +172 bytes
-//#define SUPPORT_8230              //UC8230 +118 bytes
-//#define SUPPORT_8347D             //HX8347-D, HX8347-G, HX8347-I, HX8367-A +520 bytes, 0.27s
-//#define SUPPORT_8347A             //HX8347-A +500 bytes, 0.27s
-//#define SUPPORT_8352A             //HX8352A +486 bytes, 0.27s
-//#define SUPPORT_8352B             //HX8352B
-//#define SUPPORT_8357D_GAMMA       //monster 34 byte 
-//#define SUPPORT_9163              //
-//#define SUPPORT_9225              //ILI9225-B, ILI9225-G ID=0x9225, ID=0x9226, ID=0x6813 +380 bytes
 #define SUPPORT_9320              //ID=0x0001, R61505, SPFD5408, ILI9320
 #define SUPPORT_9325              //RM68090, ILI9325, ILI9328, ILI9331, ILI9335 
-//#define SUPPORT_9326_5420         //ILI9326, SPFD5420 +246 bytes
-//#define SUPPORT_9342              //costs +114 bytes
-//#define SUPPORT_9806              //UNTESTED
 #define SUPPORT_9488_555          //costs +230 bytes, 0.03s / 0.19s
 #define SUPPORT_B509_7793         //R61509, ST7793 +244 bytes
-//#define OFFSET_9327 32            //costs about 103 bytes, 0.08s
 
 #include "MCUFRIEND_kbv.h"
 #if defined(USE_SERIAL)
 #include "utility/mcufriend_serial.h"
  //uint8_t running;
-#elif defined(__MBED__) && !defined(ARDUINO_ARCH_MBED)
-#include "utility/mcufriend_mbed.h"
-#elif defined(__CC_ARM) || defined(__CROSSWORKS_ARM)
-#include "utility/mcufriend_keil.h"
 #else
 #include "utility/mcufriend_shield.h"
 #endif
@@ -53,18 +31,13 @@
 #define FLIP_VERT       (1<<13)
 #define FLIP_HORIZ      (1<<14)
 
-#if (defined(USES_16BIT_BUS))   //only comes from SPECIALs
-#define USING_16BIT_BUS 1
-#else
-#define USING_16BIT_BUS 0
-#endif
 
 MCUFRIEND_kbv::MCUFRIEND_kbv(int CS, int RS, int WR, int RD, int _RST):Adafruit_GFX(240, 320)
 {
     // we can not access GPIO pins until AHB has been enabled.
 }
 
-static uint8_t done_reset, is8347, is555, is9797;
+static uint32_t done_reset, is8347, is555, is9797;
 static uint16_t color565_to_555(uint16_t color) {
     return (color & 0xFFC0) | ((color & 0x1F) << 1) | ((color & 0x01));  //lose Green LSB, extend Blue LSB
 }
@@ -81,9 +54,9 @@ static uint8_t color565_to_b(uint16_t color) {
     return ((color & 0x001F) << 3);  // transform to bbbbbxxx
 }
 static void write24(uint16_t color) {
-    uint8_t r = color565_to_r(color);
-    uint8_t g = color565_to_g(color);
-    uint8_t b = color565_to_b(color);
+    uint32_t r = color565_to_r(color);
+    uint32_t g = color565_to_g(color);
+    uint32_t b = color565_to_b(color);
     write8(r);
     write8(g);
     write8(b);
@@ -116,12 +89,12 @@ static void writecmddata(uint16_t cmd, uint16_t dat)
 
 void MCUFRIEND_kbv::WriteCmdData(uint16_t cmd, uint16_t dat) { writecmddata(cmd, dat); }
 
-static void WriteCmdParamN(uint16_t cmd, int8_t N, uint8_t * block)
+static void WriteCmdParamN(uint16_t cmd, int8_t N, uint32_t * block)
 {
     CS_ACTIVE;
     WriteCmd(cmd);
     while (N-- > 0) {
-        uint8_t u8 = *block++;
+        uint32_t u8 = *block++;
         write8(u8);
         if (N && is8347) {
             cmd++;
@@ -133,26 +106,20 @@ static void WriteCmdParamN(uint16_t cmd, int8_t N, uint8_t * block)
 
 static inline void WriteCmdParam4(uint8_t cmd, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4)
 {
-    uint8_t d[4];
+    uint32_t d[4];
     d[0] = d1, d[1] = d2, d[2] = d3, d[3] = d4;
     WriteCmdParamN(cmd, 4, d);
 }
 
 //#define WriteCmdParam4(cmd, d1, d2, d3, d4) {uint8_t d[4];d[0] = d1, d[1] = d2, d[2] = d3, d[3] = d4;WriteCmdParamN(cmd, 4, d);}
-void MCUFRIEND_kbv::pushCommand(uint16_t cmd, uint8_t * block, int8_t N) { WriteCmdParamN(cmd, N, block); }
+void MCUFRIEND_kbv::pushCommand(uint16_t cmd, uint32_t * block, int8_t N) { WriteCmdParamN(cmd, N, block); }
 
 static uint16_t read16bits(void)
 {
-    uint16_t ret;
-    uint8_t lo;
-#if USING_16BIT_BUS
-    READ_16(ret);               //single strobe to read whole bus
-    if (ret > 255)              //ID might say 0x00D3
-        return ret;
-#else
+    uint32_t ret;
+    uint32_t lo;
     delay(1);    //1us should be adequate
     READ_8(ret);
-#endif
     //all MIPI_DCS_REV1 style params are 8-bit
     delay(1);    //1us should be adequate
     READ_8(lo);
@@ -161,15 +128,14 @@ static uint16_t read16bits(void)
 
 uint16_t MCUFRIEND_kbv::readReg(uint16_t reg, int8_t index)
 {
-    uint16_t ret;
-    uint8_t lo;
+    uint32_t ret;
+    uint32_t lo;
     if (!done_reset)
         reset();
     CS_ACTIVE;
     WriteCmd(reg);
     setReadDir();
     delay(1);    //1us should be adequate
-    //    READ_16(ret);
     do { ret = read16bits(); }while (--index >= 0);  //need to test with SSD1963
     RD_IDLE;
     CS_IDLE;
@@ -179,23 +145,23 @@ uint16_t MCUFRIEND_kbv::readReg(uint16_t reg, int8_t index)
 
 uint32_t MCUFRIEND_kbv::readReg32(uint16_t reg)
 {
-    uint16_t h = readReg(reg, 0);
-    uint16_t l = readReg(reg, 1);
+    uint32_t h = readReg(reg, 0);
+    uint32_t l = readReg(reg, 1);
     return ((uint32_t) h << 16) | (l);
 }
 
 uint32_t MCUFRIEND_kbv::readReg40(uint16_t reg)
 {
-    uint16_t h = readReg(reg, 0);
-    uint16_t m = readReg(reg, 1);
-    uint16_t l = readReg(reg, 2);
+    uint32_t h = readReg(reg, 0);
+    uint32_t m = readReg(reg, 1);
+    uint32_t l = readReg(reg, 2);
     return ((uint32_t) h << 24) | (m << 8) | (l >> 8);
 }
 
 uint16_t MCUFRIEND_kbv::readID(void)
 {
-    uint16_t ret, ret2;
-    uint8_t msb;
+    uint32_t ret, ret2;
+    uint32_t msb;
     ret = readReg(0);           //forces a reset() if called before begin()
     if (ret == 0x5408)          //the SPFD5408 fails the 0xD3D3 test.
         return 0x5408;
@@ -251,7 +217,7 @@ uint16_t MCUFRIEND_kbv::readID(void)
 //    if (msb == 0x38 && ret == 0x8000) //unknown [xx 38 80 00] with D3 = 0x1602
     if (msb == 0x00 && ret == 0x8000) { //HX8357-D [xx 00 80 00]
 #if 1
-        uint8_t cmds[] = {0xFF, 0x83, 0x57};
+        uint32_t cmds[] = {0xFF, 0x83, 0x57};
         pushCommand(0xB9, cmds, 3);
         msb = readReg(0xD0);
         if (msb == 0x99) return 0x0099; //HX8357-D from datasheet
@@ -293,11 +259,11 @@ uint16_t MCUFRIEND_kbv::readID(void)
 }
 
  // independent cursor and window registers.   S6D0154, ST7781 increments.  ILI92320/5 do not.  
-int16_t MCUFRIEND_kbv::readGRAM(int16_t x, int16_t y, uint16_t * block, int16_t w, int16_t h)
+int16_t MCUFRIEND_kbv::readGRAM(int16_t x, int16_t y, uint32_t * block, int16_t w, int16_t h)
 {
-    uint16_t ret, dummy, _MR = _MW;
-    int16_t n = w * h, row = 0, col = 0;
-    uint8_t r, g, b, tmp;
+    uint32_t ret, dummy, _MR = _MW;
+    int32_t n = w * h, row = 0, col = 0;
+    uint32_t r, g, b, tmp;
     if (!is8347 && _lcd_capable & MIPI_DCS_REV1) // HX8347 uses same register
         _MR = 0x2E;
     if (_lcd_ID == 0x1602) _MR = 0x2E;
@@ -337,7 +303,7 @@ int16_t MCUFRIEND_kbv::readGRAM(int16_t x, int16_t y, uint16_t * block, int16_t 
 #if defined(SUPPORT_9488_555)
     if (is555) ret = color555_to_565(ret);
 #endif
-            *block++ = ret;
+            *block = ret;
             n--;
             if (!(_lcd_capable & AUTO_READINC))
                 break;
@@ -358,8 +324,8 @@ int16_t MCUFRIEND_kbv::readGRAM(int16_t x, int16_t y, uint16_t * block, int16_t 
 
 void MCUFRIEND_kbv::setRotation(uint8_t r)
 {
-    uint16_t GS, SS_v, ORG, REV = _lcd_rev, NL;
-    uint8_t val, d[3];
+    uint32_t GS, SS_v, ORG, REV = _lcd_rev, NL;
+    uint32_t val, d[3];
     rotation = r & 3;           // just perform the operation ourselves on the protected variables
     _width = (rotation & 1) ? HEIGHT : WIDTH;
     _height = (rotation & 1) ? WIDTH : HEIGHT;
@@ -393,14 +359,6 @@ void MCUFRIEND_kbv::setRotation(uint8_t r)
             d[2] = 0x3B;
             WriteCmdParamN(0xB6, 3, d);
             goto common_MC;
-#if !defined(OFFSET_9327)
-        } else if (_lcd_ID == 0x9327) {  //better 
-            d[0] = 0; 
-            d[1] = (400 / 8) - 1;        //NL
-            d[2] = (val & 0x80) ? (432 - 400) / 4 : 0; //SCN (SM=0)
-            WriteCmdParamN(0xC0, 3, d);  //PANEL_DRV
-            goto common_MC;
-#endif
         } else if (_lcd_ID == 0x1963 || _lcd_ID == 0x9481 || _lcd_ID == 0x1511) {
             if (val & 0x80)
                 val |= 0x01;    //GS
@@ -438,21 +396,7 @@ void MCUFRIEND_kbv::setRotation(uint8_t r)
     // cope with 9320 variants
     else {
         switch (_lcd_ID) {
-#if defined(SUPPORT_9225)
-        case 0x9225:
-            _SC = 0x37, _EC = 0x36, _SP = 0x39, _EP = 0x38;
-            _MC = 0x20, _MP = 0x21, _MW = 0x22;
-            GS = (val & 0x80) ? (1 << 9) : 0;
-            SS_v = (val & 0x40) ? (1 << 8) : 0;
-            WriteCmdData(0x01, GS | SS_v | 0x001C);       // set Driver Output Control
-            goto common_ORG;
-#endif
-#if defined(SUPPORT_0139) || defined(SUPPORT_0154)
-#ifdef SUPPORT_0139
-        case 0x0139:
-            _SC = 0x46, _EC = 0x46, _SP = 0x48, _EP = 0x47;
-            goto common_S6D;
-#endif
+#if defined(SUPPORT_0154)
 #ifdef SUPPORT_0154
         case 0x0154:
             _SC = 0x37, _EC = 0x36, _SP = 0x39, _EP = 0x38;
@@ -488,34 +432,11 @@ void MCUFRIEND_kbv::setRotation(uint8_t r)
             WriteCmdData(0x01, SS_v);     // set Driver Output Control
           common_ORG:
             ORG = (val & 0x20) ? (1 << 3) : 0;
-#ifdef SUPPORT_8230
-            if (_lcd_ID == 0x8230) {    // UC8230 has strange BGR and READ_BGR behaviour
-                if (rotation == 1 || rotation == 2) {
-                    val ^= 0x08;        // change BGR bit for LANDSCAPE and PORTRAIT_REV
-                }
-            }               
-#endif
             if (val & 0x08)
                 ORG |= 0x1000;  //BGR
             _lcd_madctl = ORG | 0x0030;
             WriteCmdData(0x03, _lcd_madctl);    // set GRAM write direction and BGR=1.
             break;
-#ifdef SUPPORT_1289
-        case 0x1289:
-            _MC = 0x4E, _MP = 0x4F, _MW = 0x22, _SC = 0x44, _EC = 0x44, _SP = 0x45, _EP = 0x46;
-            if (rotation & 1)
-                val ^= 0xD0;    // exchange Landscape modes
-            GS = (val & 0x80) ? (1 << 14) : 0;    //called TB (top-bottom), CAD=0
-            SS_v = (val & 0x40) ? (1 << 9) : 0;   //called RL (right-left)
-            ORG = (val & 0x20) ? (1 << 3) : 0;  //called AM
-            _lcd_drivOut = GS | SS_v | (REV << 13) | 0x013F;      //REV=0, BGR=0, MUX=319
-            if (val & 0x08)
-                _lcd_drivOut |= 0x0800; //BGR
-            WriteCmdData(0x01, _lcd_drivOut);   // set Driver Output Control
-            if (is9797) WriteCmdData(0x11, ORG | 0x4C30); else  // DFM=2, DEN=1, WM=1, TY=0
-            WriteCmdData(0x11, ORG | 0x6070);   // DFM=3, EN=0, TY=1
-            break;
-#endif
 		}
     }
     if ((rotation & 1) && ((_lcd_capable & MV_AXIS) == 0)) {
@@ -542,17 +463,11 @@ void MCUFRIEND_kbv::drawPixel(int16_t x, int16_t y, uint16_t color)
     WriteCmdData(_MW, color);
 }
 
-void MCUFRIEND_kbv::setAddrWindow(int16_t x, int16_t y, int16_t x1, int16_t y1)
+void MCUFRIEND_kbv::setAddrWindow(int32_t x, int32_t y, int32_t x1, int32_t y1)
 {
-#if defined(OFFSET_9327)
-	if (_lcd_ID == 0x9327) {
-	    if (rotation == 2) y += OFFSET_9327, y1 += OFFSET_9327;
-	    if (rotation == 3) x += OFFSET_9327, x1 += OFFSET_9327;
-    }
-#endif
 #if 1
     if (_lcd_ID == 0x1526 && (rotation & 1)) {
-		int16_t dx = x1 - x, dy = y1 - y;
+		int32_t dx = x1 - x, dy = y1 - y;
 		if (dy == 0) { y1++; }
 		else if (dx == 0) { x1 += dy; y1 -= dy; }
     }
@@ -561,7 +476,7 @@ void MCUFRIEND_kbv::setAddrWindow(int16_t x, int16_t y, int16_t x1, int16_t y1)
         WriteCmdParam4(_SC, x >> 8, x, x1 >> 8, x1);   //Start column instead of _MC
         WriteCmdParam4(_SP, y >> 8, y, y1 >> 8, y1);   //
         if (is8347 && _lcd_ID == 0x0065) {             //HX8352-B has separate _MC, _SC
-            uint8_t d[2];
+            uint32_t d[2];
             d[0] = x >> 8; d[1] = x;
             WriteCmdParamN(_MC, 2, d);                 //allows !MV_AXIS to work
             d[0] = y >> 8; d[1] = y;
@@ -585,9 +500,9 @@ void MCUFRIEND_kbv::setAddrWindow(int16_t x, int16_t y, int16_t x1, int16_t y1)
     }
 }
 
-void MCUFRIEND_kbv::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+void MCUFRIEND_kbv::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
-    int16_t end;
+    int32_t end;
 #if defined(SUPPORT_9488_555)
     if (is555) color = color565_to_555(color);
 #endif
@@ -622,35 +537,7 @@ void MCUFRIEND_kbv::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_
     uint8_t hi = color >> 8, lo = color & 0xFF;
     while (h-- > 0) {
         end = w;
-#if USING_16BIT_BUS
-#if defined(__MK66FX1M0__)      //180MHz M4
-#define STROBE_16BIT {WR_ACTIVE4;WR_ACTIVE;WR_IDLE4;WR_IDLE;}   //56ns
-#elif defined(__SAM3X8E__)      //84MHz M3
-#define STROBE_16BIT {WR_ACTIVE4;WR_ACTIVE2;WR_IDLE4;WR_IDLE2;} //286ns ?ILI9486
-//#define STROBE_16BIT {WR_ACTIVE4;WR_ACTIVE;WR_IDLE4;WR_IDLE;} //238ns SSD1289
-//#define STROBE_16BIT {WR_ACTIVE2;WR_ACTIVE;WR_IDLE2;}      //119ns RM68140
-#else                           //16MHz AVR
-#define STROBE_16BIT {WR_ACTIVE;WR_ACTIVE;WR_IDLE; }            //375ns ?ILI9486
-#endif
-        write_16(color);        //we could just do the strobe
-        lo = end & 7;
-        hi = end >> 3;
-        if (hi)
-            do {
-                STROBE_16BIT;
-                STROBE_16BIT;
-                STROBE_16BIT;
-                STROBE_16BIT;
-                STROBE_16BIT;
-                STROBE_16BIT;
-                STROBE_16BIT;
-                STROBE_16BIT;
-            } while (--hi > 0);
-        while (lo-- > 0) {
-            STROBE_16BIT;
-        }
-#else
-#if defined(SUPPORT_1289) || defined(SUPPORT_1963)
+#if defined(SUPPORT_1963)
         if (is9797) {
              uint8_t r = color565_to_r(color);
              uint8_t g = color565_to_g(color);
@@ -666,7 +553,6 @@ void MCUFRIEND_kbv::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_
             write8(hi);
             write8(lo);
         } while (--end != 0);
-#endif
     }
     CS_IDLE;
     if (!(_lcd_capable & MIPI_DCS_REV1) || ((_lcd_ID == 0x1526) && (rotation & 1)))
@@ -675,10 +561,10 @@ void MCUFRIEND_kbv::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_
 
 static void pushColors_any(uint16_t cmd, uint8_t * block, int16_t n, bool first, uint8_t flags)
 {
-    uint16_t color;
-    uint8_t h, l;
-	bool isconst = flags & 1;
-	bool isbigend = (flags & 2) != 0;
+    uint32_t color;
+    uint32_t h, l;
+	uint32_t isconst = flags & 1;
+	uint32_t isbigend = (flags & 2) != 0;
     CS_ACTIVE;
     if (first) {
         WriteCmd(cmd);
@@ -725,14 +611,9 @@ void MCUFRIEND_kbv::pushColors(const uint8_t * block, int16_t n, bool first, boo
 
 void MCUFRIEND_kbv::vertScroll(int16_t top, int16_t scrollines, int16_t offset)
 {
-#if defined(OFFSET_9327)
-	if (_lcd_ID == 0x9327) {
-	    if (rotation == 2 || rotation == 3) top += OFFSET_9327;
-    }
-#endif
-    int16_t bfa = HEIGHT - top - scrollines;  // bottom fixed area
-    int16_t vsp;
-    int16_t sea = top;
+    int32_t bfa = HEIGHT - top - scrollines;  // bottom fixed area
+    int32_t vsp;
+    int32_t sea = top;
 	if (_lcd_ID == 0x9327) bfa += 32;
     if (offset <= -scrollines || offset >= scrollines) offset = 0; //valid scroll
 	vsp = top + offset; // vertical start position
@@ -740,20 +621,7 @@ void MCUFRIEND_kbv::vertScroll(int16_t top, int16_t scrollines, int16_t offset)
         vsp += scrollines;          //keep in unsigned range
     sea = top + scrollines - 1;
     if (_lcd_capable & MIPI_DCS_REV1) {
-        uint8_t d[6];           // for multi-byte parameters
-/*
-        if (_lcd_ID == 0x9327) {        //panel is wired for 240x432 
-            if (rotation == 2 || rotation == 3) { //180 or 270 degrees
-                if (scrollines == HEIGHT) {
-                    scrollines = 432;   // we get a glitch but hey-ho
-                    vsp -= 432 - HEIGHT;
-                }
-                if (vsp < 0)
-                    vsp += 432;
-            }
-            bfa = 432 - top - scrollines;
-        }
-*/
+        uint32_t d[6];           // for multi-byte parameters
         d[0] = top >> 8;        //TFA
         d[1] = top;
         d[2] = scrollines >> 8; //VSA
@@ -779,23 +647,12 @@ void MCUFRIEND_kbv::vertScroll(int16_t top, int16_t scrollines, int16_t offset)
         WriteCmdData(0x61, _lcd_rev);   //!NDL, !VLE, REV
         WriteCmdData(0x6A, vsp);        //VL#
         break;
-#ifdef SUPPORT_0139 
-    case 0x0139:
-        WriteCmdData(0x07, 0x0213 | (_lcd_rev << 2));  //VLE1=1, GON=1, REV=x, D=3
-        WriteCmdData(0x41, vsp);  //VL# check vsp
-        break;
-#endif
-#if defined(SUPPORT_0154) || defined(SUPPORT_9225)  //thanks tongbajiel
+#if defined(SUPPORT_0154) //thanks tongbajiel
     case 0x9225:
 	case 0x0154:
         WriteCmdData(0x31, sea);        //SEA
         WriteCmdData(0x32, top);        //SSA
         WriteCmdData(0x33, vsp - top);  //SST
-        break;
-#endif
-#ifdef SUPPORT_1289
-    case 0x1289:
-        WriteCmdData(0x41, vsp);        //VL#
         break;
 #endif
 	case 0x5420:
@@ -815,7 +672,7 @@ void MCUFRIEND_kbv::vertScroll(int16_t top, int16_t scrollines, int16_t offset)
 
 void MCUFRIEND_kbv::invertDisplay(bool i)
 {
-    uint8_t val;
+    uint32_t val;
     _lcd_rev = ((_lcd_capable & REV_SCREEN) != 0) ^ i;
     if (_lcd_capable & MIPI_DCS_REV1) {
         if (is8347) {
@@ -832,21 +689,10 @@ void MCUFRIEND_kbv::invertDisplay(bool i)
     }
     // cope with 9320 style variants:
     switch (_lcd_ID) {
-#ifdef SUPPORT_0139
-    case 0x0139:
-#endif
     case 0x9225:                                        //REV is in reg(0x07) like Samsung
     case 0x0154:
         WriteCmdData(0x07, 0x13 | (_lcd_rev << 2));     //.kbv kludge
         break;
-#ifdef SUPPORT_1289
-    case 0x1289:
-        _lcd_drivOut &= ~(1 << 13);
-        if (_lcd_rev)
-            _lcd_drivOut |= (1 << 13);
-        WriteCmdData(0x01, _lcd_drivOut);
-        break;
-#endif
 	case 0x5420:
     case 0x7793:
     case 0x9326:
@@ -866,8 +712,8 @@ static void init_table(const void *table, int16_t size)
     //copes with any uint8_t table.  Even HX8347 style
     uint8_t *p = (uint8_t *) table;
     while (size > 0) {
-        uint8_t cmd = pgm_read_byte(p++);
-        uint8_t len = pgm_read_byte(p++);
+        uint32_t cmd = pgm_read_byte(p++);
+        uint32_t len = pgm_read_byte(p++);
         if (cmd == TFTLCD_DELAY8) {
             delay(len);
             len = 0;
@@ -875,8 +721,8 @@ static void init_table(const void *table, int16_t size)
             CS_ACTIVE;
             CD_COMMAND;
             write8(cmd);
-            for (uint8_t d = 0; d++ < len; ) {
-                uint8_t x = pgm_read_byte(p++);
+            for (uint32_t d = 0; d++ < len; ) {
+                uint32_t x = pgm_read_byte(p++);
                 CD_DATA;
                 write8(x);
                 if (is8347 && d < len) {
@@ -895,8 +741,8 @@ static void init_table16(const void *table, int16_t size)
 {
     uint16_t *p = (uint16_t *) table;
     while (size > 0) {
-        uint16_t cmd = pgm_read_word(p++);
-        uint16_t d = pgm_read_word(p++);
+        uint32_t cmd = pgm_read_word(p++);
+        uint32_t d = pgm_read_word(p++);
         if (cmd == TFTLCD_DELAY)
             delay(d);
         else {
@@ -908,90 +754,12 @@ static void init_table16(const void *table, int16_t size)
 
 void MCUFRIEND_kbv::begin(uint16_t ID)
 {
-    int16_t *p16;               //so we can "write" to a const protected variable.
+    int32_t *p16;               //so we can "write" to a const protected variable.
     const uint8_t *table8_ads = NULL;
-    int16_t table_size;
+    int32_t table_size;
     reset();
     _lcd_xor = 0;
     switch (_lcd_ID = ID) {
-/*
-	static const uint16_t _regValues[] PROGMEM = {
-    0x0000, 0x0001, // start oscillation
-    0x0007, 0x0000, //  source output control 0 D0 
-    0x0013, 0x0000, // power control 3 off
-    0x0011, 0x2604, //    
-    0x0014, 0x0015, //   
-    0x0010, 0x3C00, //  
- //    0x0013, 0x0040, // 
- //    0x0013, 0x0060, //     
- //    0x0013, 0x0070, // 
-    0x0013, 0x0070, // power control 3 PON PON1 AON
-       
-    0x0001, 0x0127, //      driver output control
- //    0x0002, 0x0700, //  field 0 b/c waveform xor waveform
-    0x0003, 0x1030, //    
-    0x0007, 0x0000, //    
-    0x0008, 0x0404, //    
-    0x000B, 0x0200, // 
-    0x000C, 0x0000, //   
-    0x00015,0x0000, //     
-       
-    //gamma setting    
-    0x0030, 0x0000,      
-    0x0031, 0x0606,    
-    0x0032, 0x0006,    
-    0x0033, 0x0403,  
-    0x0034, 0x0107,  
-    0x0035, 0x0101, 
-    0x0036, 0x0707,   
-    0x0037, 0x0304,   
-    0x0038, 0x0A00,     
-    0x0039, 0x0706,     
-       
-    0x0040, 0x0000,     
-    0x0041, 0x0000,      
-    0x0042, 0x013F,    
-    0x0043, 0x0000,   
-    0x0044, 0x0000,     
-    0x0045, 0x0000,     
-    0x0046, 0xEF00,    
-    0x0047, 0x013F,     
-    0x0048, 0x0000,     
-    0x0007, 0x0011,  
-    0x0007, 0x0017,     
-};
-*/
-#ifdef SUPPORT_0139
-    case 0x0139:
-        _lcd_capable = REV_SCREEN | XSA_XEA_16BIT;    //remove AUTO_READINC
-        static const uint16_t S6D0139_regValues[] PROGMEM = {
-            0x0000, 0x0001,     //Start oscillator
-            0x0011, 0x1a00,     //Power Control 2
-            0x0014, 0x2020,     //Power Control 4
-            0x0010, 0x0900,     //Power Control 1
-            0x0013, 0x0040,     //Power Control 3
-            0x0013, 0x0060,     //Power Control 3
-            0x0013, 0x0070,     //Power Control 3
-            0x0011, 0x1a04,     //Power Control 2
-            0x0010, 0x2f00,     //Power Control 1
-            0x0001, 0x0127,     //Driver Control: SM=0, GS=0, SS=1, 240x320
-            0x0002, 0x0100,     //LCD Control:  (.kbv was 0700) FLD=0, BC= 0, EOR=1
-            0x0003, 0x1030,     //Entry Mode:    TR1=0, DFM=0, BGR=1, I_D=3   
-            0x0007, 0x0000,     //Display Control: everything off
-            0x0008, 0x0303,     //Blank Period:  FP=3, BP=3
-            0x0009, 0x0000,     //f.k.
-            0x000b, 0x0000,     //Frame Control:
-            0x000c, 0x0000,     //Interface Control: system i/f
-            0x0040, 0x0000,     //Scan Line
-            0x0041, 0x0000,     //Vertical Scroll Control
-            0x0007, 0x0014,     //Display Control: VLE1=0, SPT=0, GON=1, REV=1, D=0 (halt)
-            0x0007, 0x0016,     //Display Control: VLE1=0, SPT=0, GON=1, REV=1, D=2 (blank)
-            0x0007, 0x0017,     //Display Control: VLE1=0, SPT=0, GON=1, REV=1, D=3 (normal)
-//            0x0007, 0x0217,     //Display Control: VLE1=1, SPT=0, GON=1, REV=1, D=3
-        };
-        init_table16(S6D0139_regValues, sizeof(S6D0139_regValues));
-        break;
-#endif
 
 #ifdef SUPPORT_0154
     case 0x0154:
@@ -1046,84 +814,7 @@ void MCUFRIEND_kbv::begin(uint16_t ID)
         break;
 #endif
 
-#ifdef SUPPORT_05A1
-    case 0x05A1:
-        _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS;
-        static const uint8_t S6D05A1_regValues_max[] PROGMEM = {
-            0xF0, 2, 0x5A, 0x5A,
-            0xF1, 2, 0x5A, 0x5A,
-            0xF2, 19, 0x3B, 0x33, 0x03, 0x0C, 0x08, 0x08, 0x08, 0x00, 0x08, 0x08, 0x00, 0x00, 0x00, 0x00, 0x33, 0x0C, 0x08, 0x0C, 0x08,
-            0xF4, 14, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x70, 0x03, 0x04, 0x70, 0x03,
-            0xF5, 12, 0x00, 0x46, 0x70, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x46, 0x70,
-            0xF6, 8, 0x03, 0x00, 0x08, 0x03, 0x03, 0x00, 0x03, 0x00,
-            0xF7, 5, 0x00, 0x80, 0x10, 0x02, 0x00,
-            0xF8, 2, 0x11, 0x00,
-            0xF9, 1, 0x14,
-            0xFA, 16, 0x33, 0x07, 0x04, 0x1A, 0x18, 0x1C, 0x24, 0x1D, 0x26, 0x28, 0x2F, 0x2E, 0x00, 0x00, 0x00, 0x00,
-            0xFB, 16, 0x33, 0x03, 0x00, 0x2E, 0x2F, 0x28, 0x26, 0x1D, 0x24, 0x1C, 0x18, 0x1A, 0x04, 0x00, 0x00, 0x00,
-            0xF9, 1, 0x12,
-            0xFA, 16, 0x36, 0x07, 0x04, 0x1C, 0x1C, 0x23, 0x28, 0x1C, 0x25, 0x26, 0x2E, 0x2B, 0x00, 0x00, 0x00, 0x00,
-            0xFB, 16, 0x33, 0x06, 0x00, 0x2B, 0x2E, 0x26, 0x25, 0x1C, 0x28, 0x23, 0x1C, 0x1C, 0x04, 0x00, 0x00, 0x00,
-            0xF9, 1, 0x11,
-            0xFA, 16, 0x33, 0x07, 0x04, 0x30, 0x32, 0x34, 0x35, 0x11, 0x1D, 0x20, 0x28, 0x20, 0x00, 0x00, 0x00, 0x00,
-            0xFB, 16, 0x33, 0x03, 0x00, 0x20, 0x28, 0x20, 0x1D, 0x11, 0x35, 0x34, 0x32, 0x30, 0x04, 0x00, 0x00, 0x00,
-            0x44, 2, 0x00, 0x01,
-        };
-        table8_ads = S6D05A1_regValues_max, table_size = sizeof(S6D05A1_regValues_max);
-        p16 = (int16_t *) & HEIGHT;
-        *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
-        *p16 = 320;
-        break;
-#endif
 
-#ifdef SUPPORT_1289
-    case 0x9797:
-        is9797 = 1;
-//        _lcd_capable = 0 | XSA_XEA_16BIT | REV_SCREEN | AUTO_READINC | READ_24BITS;
-// deliberately set READ_BGR to disable Software Scroll in graphictest_kbv example
-        _lcd_capable = 0 | XSA_XEA_16BIT | REV_SCREEN | AUTO_READINC | READ_24BITS | READ_BGR;
-        _lcd_ID = 0x1289;
-        goto common_1289;
-    case 0x1289:
-        _lcd_capable = 0 | XSA_XEA_16BIT | REV_SCREEN | AUTO_READINC;
-      common_1289:
-        // came from MikroElektronika library http://www.hmsprojects.com/tft_lcd.html
-        static const uint16_t SSD1289_regValues[] PROGMEM = {
-            0x0000, 0x0001,
-            0x0003, 0xA8A4,
-            0x000C, 0x0000,
-            0x000D, 0x000A,     // VRH=10
-            0x000E, 0x2B00,
-            0x001E, 0x00B7,
-            0x0001, 0x2B3F,     // setRotation() alters
-            0x0002, 0x0600,     // B_C=1, EOR=1
-            0x0010, 0x0000,
-            0x0011, 0x6070,     // setRotation() alters 
-            0x0005, 0x0000,
-            0x0006, 0x0000,
-            0x0016, 0xEF1C,
-            0x0017, 0x0003,
-            0x0007, 0x0233,
-            0x000B, 0x0000,
-            0x000F, 0x0000,
-            0x0030, 0x0707,
-            0x0031, 0x0204,
-            0x0032, 0x0204,
-            0x0033, 0x0502,
-            0x0034, 0x0507,
-            0x0035, 0x0204,
-            0x0036, 0x0204,
-            0x0037, 0x0502,
-            0x003A, 0x0302,
-            0x003B, 0x0302,
-            0x0023, 0x0000,
-            0x0024, 0x0000,
-            0x0025, 0x8000,
-        };
-        init_table16(SSD1289_regValues, sizeof(SSD1289_regValues));
-        break;
-#endif
 
     case 0x1511:                // Unknown from Levy
         _lcd_capable = AUTO_READINC | MIPI_DCS_REV1;   //extra read_8(dummy)
@@ -1131,9 +822,9 @@ void MCUFRIEND_kbv::begin(uint16_t ID)
 			0xB0, 1, 0x00,       //Command Access Protect
         };
         table8_ads = R61511_regValues, table_size = sizeof(R61511_regValues);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 320;
         break;
 
@@ -1157,136 +848,10 @@ void MCUFRIEND_kbv::begin(uint16_t ID)
         table8_ads = R61526_regValues, table_size = sizeof(R61526_regValues);
         break;
 
-#ifdef SUPPORT_1580
-    case 0x1580:
-        _lcd_capable = 0 | REV_SCREEN | READ_BGR | INVERT_GS | READ_NODUMMY; //thanks vanhan123
-        static const uint16_t R61580_regValues[] PROGMEM = {  //from MCHIP Graphics Lib drvTFT001.c
-            // Synchronization after reset
-            TFTLCD_DELAY, 2,
-            0x0000, 0x0000,
-            0x0000, 0x0000,
-            0x0000, 0x0000,
-            0x0000, 0x0000,
-
-            // Setup display
-            0x00A4, 0x0001,          // CALB=1
-            TFTLCD_DELAY, 2,
-            0x0060, 0xA700,          // Driver Output Control
-            0x0008, 0x0808,          // Display Control BP=8, FP=8
-            0x0030, 0x0111,          // y control
-            0x0031, 0x2410,          // y control
-            0x0032, 0x0501,          // y control
-            0x0033, 0x050C,          // y control
-            0x0034, 0x2211,          // y control
-            0x0035, 0x0C05,          // y control
-            0x0036, 0x2105,          // y control
-            0x0037, 0x1004,          // y control
-            0x0038, 0x1101,          // y control
-            0x0039, 0x1122,          // y control
-            0x0090, 0x0019,          // 80Hz
-            0x0010, 0x0530,          // Power Control
-            0x0011, 0x0237,          //DC1=2, DC0=3, VC=7
-//            0x0011, 0x17B0,          //DC1=7, DC0=3, VC=0 ?b12 ?b7 vanhan123
-            0x0012, 0x01BF,          //VCMR=1, PSON=1, PON=1, VRH=15 
-//            0x0012, 0x013A,          //VCMR=1, PSON=1, PON=1, VRH=10 vanhan123
-            0x0013, 0x1300,          //VDV=19
-            TFTLCD_DELAY, 100,
-
-            0x0001, 0x0100,
-            0x0002, 0x0200,
-            0x0003, 0x1030,
-            0x0009, 0x0001,
-            0x000A, 0x0008,
-            0x000C, 0x0001,
-            0x000D, 0xD000,
-            0x000E, 0x0030,
-            0x000F, 0x0000,
-            0x0020, 0x0000,
-            0x0021, 0x0000,
-            0x0029, 0x0077,
-            0x0050, 0x0000,
-            0x0051, 0xD0EF,
-            0x0052, 0x0000,
-            0x0053, 0x013F,
-            0x0061, 0x0001,
-            0x006A, 0x0000,
-            0x0080, 0x0000,
-            0x0081, 0x0000,
-            0x0082, 0x005F,
-            0x0093, 0x0701,
-            0x0007, 0x0100,
-        };
-        static const uint16_t R61580_DEM240320C[] PROGMEM = { //from DEM 240320C TMH-PW-N
-            0x00, 0x0000,
-            0x00, 0x0000,
-            TFTLCD_DELAY, 100,
-            0x00, 0x0000,
-            0x00, 0x0000,
-            0x00, 0x0000,
-            0x00, 0x0000,
-            0xA4, 0x0001,
-            TFTLCD_DELAY, 100,
-            0x60, 0xA700,
-            0x08, 0x0808,
-            /******************************************/
-            //Gamma Setting:
-            0x30, 0x0203,
-            0x31, 0x080F,
-            0x32, 0x0401,
-            0x33, 0x050B,
-            0x34, 0x3330,
-            0x35, 0x0B05,
-            0x36, 0x0005,
-            0x37, 0x0F08,
-            0x38, 0x0302,
-            0x39, 0x3033,
-            /******************************************/
-            //Power Setting:
-            0x90, 0x0018, //80Hz
-            0x10, 0x0530, //BT,AP
-            0x11, 0x0237, //DC1,DC0,VC
-            0x12, 0x01BF,
-            0x13, 0x1000, //VCOM
-            TFTLCD_DELAY, 200,
-            /******************************************/
-            0x01, 0x0100,
-            0x02, 0x0200,
-            0x03, 0x1030,
-            0x09, 0x0001,
-            0x0A, 0x0008,
-            0x0C, 0x0000,
-            0x0D, 0xD000,
-
-            0x0E, 0x0030,
-            0x0F, 0x0000,
-            0x20, 0x0000, //H Start
-            0x21, 0x0000, //V Start
-            0x29, 0x002E,
-            0x50, 0x0000,
-            0x51, 0x00EF,
-            0x52, 0x0000,
-            0x53, 0x013F,
-            0x61, 0x0001,
-            0x6A, 0x0000,
-            0x80, 0x0000,
-            0x81, 0x0000,
-            0x82, 0x005F,
-            0x93, 0x0701,
-            /******************************************/
-            0x07, 0x0100,
-            TFTLCD_DELAY, 100,
-        };
-        init_table16(R61580_DEM240320C, sizeof(R61580_DEM240320C));
-//        init_table16(R61580_regValues, sizeof(R61580_regValues));
-        break;
-#endif
 
 #if defined(SUPPORT_1963) 
     case 0x1963:
         _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | READ_NODUMMY | INVERT_SS | INVERT_RGB;
-#if USING_16BIT_BUS
-#define SSD1963_PIXDATA 0x03
-#else
 #define SSD1963_PIXDATA 0x00
         is9797 = 1;
         _lcd_capable |= READ_24BITS;
@@ -1420,18 +985,12 @@ void MCUFRIEND_kbv::begin(uint16_t ID)
             (0xBE), 6, 0x06, 0xF0, 0x01, 0xF0, 0x00, 0x00,      //set PWM for B/L
             (0xD0), 1, 0x0D,
         };
-//        table8_ads = SSD1963_480_regValues, table_size = sizeof(SSD1963_480_regValues);
         table8_ads = SSD1963_800_regValues, table_size = sizeof(SSD1963_800_regValues);
-//        table8_ads = SSD1963_NHD_50_regValues, table_size = sizeof(SSD1963_NHD_50_regValues);
-//        table8_ads = SSD1963_NHD_70_regValues, table_size = sizeof(SSD1963_NHD_70_regValues);
-//        table8_ads = SSD1963_800NEW_regValues, table_size = sizeof(SSD1963_800NEW_regValues);
-//        table8_ads = SSD1963_800ALT_regValues, table_size = sizeof(SSD1963_800ALT_regValues);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 800;
         break;
-#endif
 
     case 0x3229:
         _lcd_capable = 0 | AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | INVERT_SS; // | READ_24BITS;
@@ -1456,82 +1015,12 @@ void MCUFRIEND_kbv::begin(uint16_t ID)
             0xf9, 2, 0x15, 0x15,      // ?? 13bit 454 [37]
             0xf3, 3, 0x0a, 0x02, 0x0a, // [06 03 06]
             0xf6, 3, 0x01, 0x10, 0x00, // [01 10 00]
-            /*
-                        0xe0, 1, 0x05,            //I don't believe these registers
-                        0xe1, 1, 0x32,            //safer to use power-on defaults
-                        0xe2, 1, 0x77,
-                        0xe3, 1, 0x77,
-                        0xe4, 1, 0x7f,
-                        0xe5, 1, 0xfa,
-                        0xe6, 1, 0x00,
-                        0xe7, 1, 0x74,
-                        0xe8, 1, 0x27,
-                        0xe9, 1, 0x10,
-                        0xea, 1, 0xc0,
-                        0xeb, 1, 0x25,
-            */
             0xfa, 0, //exit extern command [cmd=0xFAFB]
             0xfb, 0,
         };
         table8_ads = UNK3229_regValues, table_size = sizeof(UNK3229_regValues); //
         break;
 
-#ifdef SUPPORT_4532
-//Support for LG Electronics LGDP4532 (also 4531 i guess) by Leodino v1.0 2-Nov-2016
-//based on data by waveshare and the datasheet of LG Electronics
-//My approach to get it working: the parameters by waveshare did no make it function allright
-//I started with remming lines to see if this helped. Basically the stuff in range 41-93
-//gives problems.
-//The other lines that are REMmed give no problems, but it seems default values are OK as well.
-case 0x4532:    // thanks Leodino
-	_lcd_capable = 0 | REV_SCREEN;  // | INVERT_GS;
-	static const uint16_t LGDP4532_regValues[] PROGMEM = {
-		0x0000,0x0001, //Device code read
-		0x0010,0x0628, //Power control 1 SAP[2:0] BT[3:0] AP[2:0] DK DSTB SLP
-		0x0012,0x0006, //Power control 3 PON VRH[3:0]
-		//0x0013,0x0A32, //Power control 4 VCOMG VDV[4:0] VCM[6:0]
-		0x0011,0x0040, //Power control 2; DC1[2:0] DC0[2:0] VC[2:0]
-		//0x0015,0x0050, //Regulator control RSET RI[2:0] RV[2:0] RCONT[2:0]
-		0x0012,0x0016, //Power control 3 PON VRH[3:0]
-		TFTLCD_DELAY,50,
-		0x0010,0x5660, //Power control 1 SAP[2:0] BT[3:0] AP[2:0] DK DSTB SLP
-		TFTLCD_DELAY,50,
-		//0x0013,0x2A4E, //Power control 4 VCOMG VDV[4:0] VCM[6:0]
-		//0x0001,0x0100, //Driver output control SM SS
-		//0x0002,0x0300, //LCD Driving Wave Control
-		//0x0003,0x1030, //Entry mode TRI DFM  BGR  ORG I/D[1:0] AM
-		//0x0007,0x0202, //Display Control 1 PTDE[1:0] BASEE GON DTE COL D[1:0]
-		TFTLCD_DELAY,50,
-		//0x0008,0x0202, //Display Control 2 FP[3:0] BP[3:0] front and back porch (blank period at begin and end..)
-		//0x000A,0x0000, //Test Register 1 (RA0h)
-		//Gamma adjustment
-		0x0030,0x0000,
-		0x0031,0x0402,
-		0x0032,0x0106,
-		0x0033,0x0700,
-		0x0034,0x0104,
-		0x0035,0x0301,
-		0x0036,0x0707,
-		0x0037,0x0305,
-		0x0038,0x0208,
-		0x0039,0x0F0B,
-		TFTLCD_DELAY,50,
-		//some of this stuff in range 41-93 really throws things off....
-		//0x0041,0x0002,
-		//0x0060,0x2700, //Driver Output Control (R60h)
-		//0x0061,0x0001, //Base Image Display Control (R61h)
-		//0x0090,0x0119,   //Panel Interface Control 1 (R90h) DIVI[1:0]  RTNI[4:0]
-		//0x0092,0x010A,  //Panel Interface Control 2 (R92h)  NOWI[2:0] EQI2[1:0] EQI1[1:0]
-		//0x0093,0x0004, //Panel Interface Control 3 (R93h) MCPI[2:0]
-		//0x00A0,0x0100, //Test Register 1 (RA0h)
-		TFTLCD_DELAY,50,
-		0x0007,0x0133, //Display Control 1 PTDE[1:0] BASEE GON DTE COL D[1:0]
-		TFTLCD_DELAY,50,
-		//0x00A0,0x0000, //Test Register 1 (RA0h)
-		};
-	init_table16(LGDP4532_regValues, sizeof(LGDP4532_regValues));
-	break;
-#endif
 
 #ifdef SUPPORT_4535
     case 0x4535:
@@ -1587,9 +1076,9 @@ case 0x4532:    // thanks Leodino
             TFTLCD_DELAY8, 10,    //just some dummy
         };
         table8_ads = NT35310_regValues, table_size = sizeof(NT35310_regValues);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 320;
         break;
 
@@ -1600,37 +1089,13 @@ case 0x4532:    // thanks Leodino
             0x3A, 1, 0x55,      //Pixel format .kbv my Mega Shield
         };
         table8_ads = RM68140_regValues_max, table_size = sizeof(RM68140_regValues_max);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 320;
         break;
 #endif
 
-#ifdef SUPPORT_7735
-    case 0x7735:                //
-        _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | REV_SCREEN | READ_24BITS;
-        static const uint8_t PROGMEM table7735S[] = {
-            //  (COMMAND_BYTE), n, data_bytes....
-            0xB1, 3, 0x01, 0x2C, 0x2D,  // [05 3C 3C] FRMCTR1 if GM==11
-            0xB2, 3, 0x01, 0x2C, 0x2D,  // [05 3C 3C]
-            0xB3, 6, 0x01, 0x2C, 0x2D, 0x01, 0x2C, 0x2D, // [05 3C 3C 05 3C 3C]
-            0xB4, 1, 0x07,              // [07] INVCTR Column inversion
-            //ST7735XR Power Sequence
-            0xC0, 3, 0xA2, 0x02, 0x84,  // [A8 08 84] PWCTR1
-            0xC1, 1, 0xC5,              // [C0]
-            0xC2, 2, 0x0A, 0x00,        // [0A 00]
-            0xC3, 2, 0x8A, 0x2A,        // [8A 26]
-            0xC4, 2, 0x8A, 0xEE,        // [8A EE]
-            0xC5, 1, 0x0E,              // [05] VMCTR1 VCOM
-        };
-        table8_ads = table7735S, table_size = sizeof(table7735S);   //
-        p16 = (int16_t *) & HEIGHT;
-        *p16 = 160;
-        p16 = (int16_t *) & WIDTH;
-        *p16 = 128;
-        break;
-#endif
 
 #ifdef SUPPORT_7781
     case 0x7783:
@@ -1764,359 +1229,9 @@ case 0x4532:    // thanks Leodino
         table8_ads = FK8031_regValues, table_size = sizeof(FK8031_regValues);
         break;
 
-#ifdef SUPPORT_8347D
-    case 0x4747:       //HX8347-D
-        _lcd_capable = REV_SCREEN | MIPI_DCS_REV1 | MV_AXIS | INVERT_SS | AUTO_READINC | READ_24BITS;
-		goto common_8347DGI;
-    case 0x6767:       //HX8367-A
-	case 0x7575:       //HX8347-G
-	case 0x9595:       //HX8347-I
-        _lcd_capable = REV_SCREEN | MIPI_DCS_REV1 | MV_AXIS;
-      common_8347DGI:  
-		is8347 = 1;
-        static const uint8_t HX8347G_2_regValues[] PROGMEM = {
-            0xEA, 2, 0x00, 0x20,        //PTBA[15:0]
-            0xEC, 2, 0x0C, 0xC4,        //STBA[15:0]
-            0xE8, 1, 0x38,      //OPON[7:0]
-            0xE9, 1, 0x10,      //OPON1[7:0]
-            0xF1, 1, 0x01,      //OTPS1B
-            0xF2, 1, 0x10,      //GEN
-            //Gamma 2.2 Setting
-            0x40, 13, 0x01, 0x00, 0x00, 0x10, 0x0E, 0x24, 0x04, 0x50, 0x02, 0x13, 0x19, 0x19, 0x16,
-            0x50, 14, 0x1B, 0x31, 0x2F, 0x3F, 0x3F, 0x3E, 0x2F, 0x7B, 0x09, 0x06, 0x06, 0x0C, 0x1D, 0xCC,
-            //Power Voltage Setting
-            0x1B, 1, 0x1B,      //VRH=4.65V
-            0x1A, 1, 0x01,      //BT (VGH~15V,VGL~-10V,DDVDH~5V)
-            0x24, 1, 0x2F,      //VMH(VCOM High voltage ~3.2V)
-            0x25, 1, 0x57,      //VML(VCOM Low voltage -1.2V)
-            //****VCOM offset**///
-            0x23, 1, 0x88,      //for Flicker adjust //can reload from OTP
-            //Power on Setting
-            0x18, 1, 0x34,      //I/P_RADJ,N/P_RADJ, Normal mode 60Hz
-            0x19, 1, 0x01,      //OSC_EN='1', start Osc
-            0x01, 1, 0x00,      //DP_STB='0', out deep sleep
-            0x1F, 1, 0x88,      // GAS=1, VOMG=00, PON=0, DK=1, XDK=0, DVDH_TRI=0, STB=0
-            TFTLCD_DELAY8, 5,
-            0x1F, 1, 0x80,      // GAS=1, VOMG=00, PON=0, DK=0, XDK=0, DVDH_TRI=0, STB=0
-            TFTLCD_DELAY8, 3,
-            0x1F, 1, 0x90,      // GAS=1, VOMG=00, PON=1, DK=0, XDK=0, DVDH_TRI=0, STB=0
-            TFTLCD_DELAY8, 5,
-            0x1F, 1, 0xD0,      // GAS=1, VOMG=10, PON=1, DK=0, XDK=0, DDVDH_TRI=0, STB=0
-            TFTLCD_DELAY8, 5,
-            //262k/65k color selection
-            0x17, 1, 0x05,      //default 0x06 262k color // 0x05 65k color
-            //SET PANEL
-            0x36, 1, 0x00,      //SS_P, GS_P,REV_P,BGR_P
-            //Display ON Setting
-            0x28, 1, 0x38,      //GON=1, DTE=1, D=1000
-            TFTLCD_DELAY8, 40,
-            0x28, 1, 0x3F,      //GON=1, DTE=1, D=1100
-
-            0x16, 1, 0x18,
-        };
-        init_table(HX8347G_2_regValues, sizeof(HX8347G_2_regValues));
-        break;
-#endif
 		
-#ifdef SUPPORT_8352A
-	case 0x5252:       //HX8352-A
-        _lcd_capable = MIPI_DCS_REV1 | MV_AXIS;
-        is8347 = 1;
-        static const uint8_t HX8352A_regValues[] PROGMEM = {
-            0x83, 1, 0x02,      //Test Mode: TESTM=1
-            0x85, 1, 0x03,      //VDD ctl  : VDC_SEL=3 [05]
-            0x8B, 1, 0x01,      //VGS_RES 1: RES_VGS1=1 
-            0x8C, 1, 0x93,      //VGS_RES 2: RES_VGS2=1, anon=0x13 [93]
-            0x91, 1, 0x01,      //PWM control: SYNC=1
-            0x83, 1, 0x00,      //Test Mode: TESTM=0
-            //Gamma  Setting
-            0x3E, 12, 0xB0, 0x03, 0x10, 0x56, 0x13, 0x46, 0x23, 0x76, 0x00, 0x5E, 0x4F, 0x40,
-            //Power Voltage Setting
-            0x17, 1, 0x91,      //OSC   1: RADJ=9, OSC_EN=1 [F0]
-            0x2B, 1, 0xF9,      //Cycle 1: N_DC=F9 [BE]
-            TFTLCD_DELAY8, 10,
-            0x1B, 1, 0x14,      //Power 3: BT=1, ??=1, AP=0 [42]  
-            0x1A, 1, 0x11,      //Power 2: VC3=1, VC1=1 [05]
-            0x1C, 1, 0x06,      //Power 4: VRH=6 [0D]
-            0x1F, 1, 0x42,      //VCOM   : VCM=42 [55]
-            TFTLCD_DELAY8, 20,
-            0x19, 1, 0x0A,      //Power 1: DK=1, VL_TR1=1 [09]
-            0x19, 1, 0x1A,      //Power 1: PON=1, DK=1, VL_TR1=1 [09]
-            TFTLCD_DELAY8, 40,
-            0x19, 1, 0x12,      //Power 1: PON=1, DK=1, STB=1 [09]
-            TFTLCD_DELAY8, 40,
-            0x1E, 1, 0x27,      //Power 6: VCOMG=1, VDV=7 [10]
-            TFTLCD_DELAY8, 100,
-            //Display ON Setting
-            0x24, 1, 0x60,      //Display 2: PT=1, GON=1 [A0]
-            0x3D, 1, 0x40,      //Source 1: N_SAP=40 [C0]
-            0x34, 1, 0x38,      //Cycle 10: EQS=0x38 [38]
-            0x35, 1, 0x38,      //Cycle 11: EQP=0x38 [38]
-            0x24, 1, 0x38,      //Display 2: GON=1 D=2 [A0]
-            TFTLCD_DELAY8, 40,
-            0x24, 1, 0x3C,      //Display 2: GON=1 D=3 [A0]
-            0x16, 1, 0x1C,      //Memaccess: GS=1, BGR=1, SS=1 
-            0x01, 1, 0x06,      //Disp Mode: INVON=1, NORON=1 [02]
-            0x55, 1, 0x06,      //SM_PANEL=0, SS_PANEL=0, GS_PANEL=1, REV_PANEL=1, BGR_PANEL=0
-        };
-        init_table(HX8352A_regValues, sizeof(HX8352A_regValues));
-        p16 = (int16_t *) & HEIGHT;
-        *p16 = 400;
-        break;
-#endif
 
-#ifdef SUPPORT_8352B
-    case 0x0065:       //HX8352-B
-        _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | READ_24BITS | REV_SCREEN;
-        is8347 = 1;
-        static const uint8_t HX8352B_regValues[] PROGMEM = {
-            // Register setting for EQ setting
-            0xe5, 1, 0x10,      //
-            0xe7, 1, 0x10,      //
-            0xe8, 1, 0x48,      //
-            0xec, 1, 0x09,      //
-            0xed, 1, 0x6c,      //
-            // Power on Setting
-            0x23, 1, 0x6F,      //VMF
-            0x24, 1, 0x57,      //VMH
-            0x25, 1, 0x71,      //VML
-            0xE2, 1, 0x18,      //
-            0x1B, 1, 0x15,      //VRH
-            0x01, 1, 0x00,      //
-            0x1C, 1, 0x03,      //AP=3
-            // Power on sequence
-            0x19, 1, 0x01,      //OSCEN=1
-            TFTLCD_DELAY8, 5,
-            0x1F, 1, 0x8C,      //GASEN=1, DK=1, XDK=1
-            0x1F, 1, 0x84,      //GASEN=1, XDK=1
-            TFTLCD_DELAY8, 10,
-            0x1F, 1, 0x94,      //GASEN=1, PON=1, XDK=1
-            TFTLCD_DELAY8, 10,
-            0x1F, 1, 0xD4,      //GASEN=1, VCOMG=1, PON=1, XDK=1
-            TFTLCD_DELAY8, 5,
-            // Gamma Setting
-            0x40, 13, 0x00, 0x2B, 0x29, 0x3E, 0x3D, 0x3F, 0x24, 0x74, 0x08, 0x06, 0x07, 0x0D, 0x17,
-            0x50, 13, 0x00, 0x02, 0x01, 0x16, 0x14, 0x3F, 0x0B, 0x5B, 0x08, 0x12, 0x18, 0x19, 0x17,
-            0x5D, 1, 0xFF,      //
 
-            0x16, 1, 0x08,      //MemoryAccess BGR=1
-            0x28, 1, 0x20,      //GON=1
-            TFTLCD_DELAY8, 40,
-            0x28, 1, 0x38,      //GON=1, DTE=1, D=2
-            TFTLCD_DELAY8, 40,
-            0x28, 1, 0x3C,      //GON=1, DTE=1, D=3
-
-            0x02, 2, 0x00, 0x00,     //SC
-            0x04, 2, 0x00, 0xEF,     //EC
-            0x06, 2, 0x00, 0x00,     //SP
-            0x08, 2, 0x01, 0x8F,     //EP
-
-            0x80, 2, 0x00, 0x00,     //CAC
-            0x82, 2, 0x00, 0x00,     //RAC
-            0x17, 1, 0x05,      //COLMOD = 565
-
-        };
-        init_table(HX8352B_regValues, sizeof(HX8352B_regValues));
-        p16 = (int16_t *) & HEIGHT;
-        *p16 = 400;
-        break;
-#endif
-
-#ifdef SUPPORT_8347A
-    case 0x8347:
-        _lcd_capable = REV_SCREEN | MIPI_DCS_REV1 | MV_AXIS;
-        // AN.01 The reference setting of CMO 3.2” Panel
-        static const uint8_t HX8347A_CMO32_regValues[] PROGMEM = {
-            //  VENDOR Gamma for 3.2"
-            (0x46), 12, 0xA4, 0x53, 0x00, 0x44, 0x04, 0x67, 0x33, 0x77, 0x12, 0x4C, 0x46, 0x44,
-            // Display Setting
-            (0x01), 1, 0x06,    // IDMON=0, INVON=1, NORON=1, PTLON=0
-            (0x16), 1, 0x48,    // MY=0, MX=0, MV=0, ML=1, BGR=0, TEON=0
-            (0x23), 3, 0x95, 0x95, 0xFF,        // N_DC=1001 0101, PI_DC=1001 0101, I_DC=1111 1111
-
-            (0x27), 4, 0x02, 0x02, 0x02, 0x02,  // N_BP=2, N_FP=2, PI_BP=2, PI_FP=2
-            (0x2C), 2, 0x02, 0x02,      // I_BP=2, I_FP=2
-
-            (0x3a), 4, 0x01, 0x01, 0xF0, 0x00,  // N_RTN=0, N_NW=1, P_RTN=0, P_NW=1, I_RTN=15, I_NW=0, DIV=0
-            TFTLCD_DELAY8, 5,
-            (0x35), 2, 0x38, 0x78,      // EQS=38h, EQP=78h
-            (0x3E), 1, 0x38,    // SON=38h
-            (0x40), 2, 0x0F, 0xF0,      // GDON=0Fh, GDOFF 
-            // Power Supply Setting
-            (0x19), 1, 0x49,    // CADJ=0100, CUADJ=100, OSD_EN=1 ,60Hz
-            (0x93), 1, 0x0F,    // RADJ=1111, 100%
-            TFTLCD_DELAY8, 5,
-            (0x20), 1, 0x40,    // BT=0100
-            (0x1D), 3, 0x07, 0x00, 0x04,        // VC1=7, VC3=0, VRH=??
-            //VCOM SETTING for 3.2"
-            (0x44), 2, 0x4D, 0x11,      // VCM=100 1101, VDV=1 0001   
-            TFTLCD_DELAY8, 10,
-            (0x1C), 1, 0x04,    // AP=100
-            TFTLCD_DELAY8, 20,
-            (0x1B), 1, 0x18,    // GASENB=0, PON=0, DK=1, XDK=0, VLCD_TRI=0, STB=0
-            TFTLCD_DELAY8, 40,
-            (0x1B), 1, 0x10,    // GASENB=0, PON=1, DK=0, XDK=0, VLCD_TRI=0, STB=0
-            TFTLCD_DELAY8, 40,
-            (0x43), 1, 0x80,    //set VCOMG=1
-            TFTLCD_DELAY8, 100,
-            // Display ON Setting
-            (0x90), 1, 0x7F,    // SAP=0111 1111
-            (0x26), 1, 0x04,    //GON=0, DTE=0, D=01
-            TFTLCD_DELAY8, 40,
-            (0x26), 1, 0x24,    //GON=1, DTE=0, D=01
-            (0x26), 1, 0x2C,    //GON=1, DTE=0, D=11
-            TFTLCD_DELAY8, 40,
-            (0x26), 1, 0x3C,    //GON=1, DTE=1, D=11
-            // INTERNAL REGISTER SETTING
-            (0x57), 1, 0x02,    // TEST_Mode=1: into TEST mode
-            (0x55), 1, 0x00,    // VDC_SEL=000, VDDD=1.95V
-            (0xFE), 1, 0x5A,    // For ESD protection
-            (0x57), 1, 0x00,    // TEST_Mode=0: exit TEST mode
-        };
-        // AN.01 The reference setting of CMO 2.4” Panel
-        static const uint8_t HX8347A_CMO24_regValues[] PROGMEM = {
-            //  VENDOR Gamma for 2.4"
-            (0x46), 12, 0x94, 0x41, 0x00, 0x33, 0x23, 0x45, 0x44, 0x77, 0x12, 0xCC, 0x46, 0x82,
-            // Display Setting
-            (0x01), 1, 0x06,    // IDMON=0, INVON=1, NORON=1, PTLON=0
-            (0x16), 1, 0x48,    // MY=0, MX=0, MV=0, ML=1, BGR=0, TEON=0
-            (0x23), 3, 0x95, 0x95, 0xFF,        // N_DC=1001 0101, PI_DC=1001 0101, I_DC=1111 1111
-
-            (0x27), 4, 0x02, 0x02, 0x02, 0x02,  // N_BP=2, N_FP=2, PI_BP=2, PI_FP=2
-            (0x2C), 2, 0x02, 0x02,      // I_BP=2, I_FP=2
-
-            (0x3a), 4, 0x01, 0x01, 0xF0, 0x00,  // N_RTN=0, N_NW=1, P_RTN=0, P_NW=1, I_RTN=15, I_NW=0, DIV=0
-            TFTLCD_DELAY8, 5,
-            (0x35), 2, 0x38, 0x78,      // EQS=38h, EQP=78h
-            (0x3E), 1, 0x38,    // SON=38h
-            (0x40), 2, 0x0F, 0xF0,      // GDON=0Fh, GDOFF 
-            // Power Supply Setting
-            (0x19), 1, 0x49,    // CADJ=0100, CUADJ=100, OSD_EN=1 ,60Hz
-            (0x93), 1, 0x0F,    // RADJ=1111, 100%
-            TFTLCD_DELAY8, 5,
-            (0x20), 1, 0x40,    // BT=0100
-            (0x1D), 3, 0x07, 0x00, 0x04,        // VC1=7, VC3=0, VRH=??
-            //VCOM SETTING for 2.4"
-            (0x44), 2, 0x40, 0x12,      // VCM=100 0000, VDV=1 0001   
-            TFTLCD_DELAY8, 10,
-            (0x1C), 1, 0x04,    // AP=100
-            TFTLCD_DELAY8, 20,
-            (0x1B), 1, 0x18,    // GASENB=0, PON=0, DK=1, XDK=0, VLCD_TRI=0, STB=0
-            TFTLCD_DELAY8, 40,
-            (0x1B), 1, 0x10,    // GASENB=0, PON=1, DK=0, XDK=0, VLCD_TRI=0, STB=0
-            TFTLCD_DELAY8, 40,
-            (0x43), 1, 0x80,    //set VCOMG=1
-            TFTLCD_DELAY8, 100,
-            // Display ON Setting
-            (0x90), 1, 0x7F,    // SAP=0111 1111
-            (0x26), 1, 0x04,    //GON=0, DTE=0, D=01
-            TFTLCD_DELAY8, 40,
-            (0x26), 1, 0x24,    //GON=1, DTE=0, D=01
-            (0x26), 1, 0x2C,    //GON=1, DTE=0, D=11
-            TFTLCD_DELAY8, 40,
-            (0x26), 1, 0x3C,    //GON=1, DTE=1, D=11
-            // INTERNAL REGISTER SETTING
-            (0x57), 1, 0x02,    // TEST_Mode=1: into TEST mode
-            (0x55), 1, 0x00,    // VDC_SEL=000, VDDD=1.95V
-            (0xFE), 1, 0x5A,    // For ESD protection
-            (0x57), 1, 0x00,    // TEST_Mode=0: exit TEST mode
-        };
-        static const uint8_t HX8347A_ITDB02_regValues[] PROGMEM = {
-            //  VENDOR Gamma ITDB02 same as CMO32.   Delays are shorter than AN01
-            (0x46), 12, 0xA4, 0x53, 0x00, 0x44, 0x04, 0x67, 0x33, 0x77, 0x12, 0x4C, 0x46, 0x44,
-            // Display Setting
-            (0x01), 1, 0x06,    // IDMON=0, INVON=1, NORON=1, PTLON=0
-            (0x16), 1, 0xC8,    // MY=0, MX=0, MV=0, ML=1, BGR=0, TEON=0 .itead
-            (0x23), 3, 0x95, 0x95, 0xFF,        // N_DC=1001 0101, PI_DC=1001 0101, I_DC=1111 1111
-
-            (0x27), 4, 0x02, 0x02, 0x02, 0x02,  // N_BP=2, N_FP=2, PI_BP=2, PI_FP=2
-            (0x2C), 2, 0x02, 0x02,      // I_BP=2, I_FP=2
-
-            (0x3a), 4, 0x01, 0x00, 0xF0, 0x00,  // N_RTN=0, N_NW=1, P_RTN=0, ?? P_NW=1, I_RTN=15, I_NW=0, DIV=0 .itead
-            TFTLCD_DELAY8, 5,
-            (0x35), 2, 0x38, 0x78,      // EQS=38h, EQP=78h
-            (0x3E), 1, 0x38,    // SON=38h
-            (0x40), 2, 0x0F, 0xF0,      // GDON=0Fh, GDOFF 
-            // Power Supply Setting 
-            (0x19), 1, 0x49,    // CADJ=0100, CUADJ=100, OSD_EN=1 ,60Hz
-            (0x93), 1, 0x0F,    // RADJ=1111, 100%
-            TFTLCD_DELAY8, 5,
-            (0x20), 1, 0x40,    // BT=0100
-            (0x1D), 3, 0x07, 0x00, 0x04,        // VC1=7, VC3=0, VRH=??
-            //VCOM SETTING for ITDB02
-            (0x44), 2, 0x4D, 0x0E,      // VCM=101 0000  4D, VDV=1 0001 .itead
-            TFTLCD_DELAY8, 5,
-            (0x1C), 1, 0x04,    // AP=100
-            TFTLCD_DELAY8, 5,
-            (0x1B), 1, 0x18,    // GASENB=0, PON=0, DK=1, XDK=0, VLCD_TRI=0, STB=0
-            TFTLCD_DELAY8, 5,
-            (0x1B), 1, 0x10,    // GASENB=0, PON=1, DK=0, XDK=0, VLCD_TRI=0, STB=0
-            TFTLCD_DELAY8, 5,
-            (0x43), 1, 0x80,    //set VCOMG=1
-            TFTLCD_DELAY8, 5,
-            // Display ON Setting
-            (0x90), 1, 0x7F,    // SAP=0111 1111
-            (0x26), 1, 0x04,    //GON=0, DTE=0, D=01
-            TFTLCD_DELAY8, 5,
-            (0x26), 1, 0x24,    //GON=1, DTE=0, D=01
-            (0x26), 1, 0x2C,    //GON=1, DTE=0, D=11
-            TFTLCD_DELAY8, 5,
-            (0x26), 1, 0x3C,    //GON=1, DTE=1, D=11
-            // INTERNAL REGISTER SETTING for ITDB02
-            (0x57), 1, 0x02,    // TEST_Mode=1: into TEST mode
-            (0x95), 1, 0x01,    // SET DISPLAY CLOCK AND PUMPING CLOCK TO SYNCHRONIZE .itead
-            (0x57), 1, 0x00,    // TEST_Mode=0: exit TEST mode
-        };
-        static const uint8_t HX8347A_NHD_regValues[] PROGMEM = {
-            //Gamma Setting NHD
-            (0x46), 12, 0x94, 0x41, 0x00, 0x33, 0x23, 0x45, 0x44, 0x77, 0x12, 0xCC, 0x46, 0x82,
-            (0x01), 1, 0x06,    //Display Mode [06]
-            (0x16), 1, 0xC8,    //MADCTL [00] MY=1, MX=1, BGR=1
-//            (0x70), 1, 0x05,    //Panel [06] 16-bit
-            (0x23), 3, 0x95, 0x95, 0xFF,        //Cycle Control 1-3 [95 95 FF]
-            (0x27), 4, 0x02, 0x02, 0x02, 0x02,  //Display Control 2-5 [02 02 02 02]
-            (0x2C), 2, 0x02, 0x02,      //Display Control 6-7 [02 02]
-            (0x3A), 4, 0x01, 0x01, 0xF0, 0x00,  //Cycle Control 1-4 [01 01 F0 00]
-            TFTLCD_DELAY8, 80,
-            (0x35), 2, 0x38, 0x78,      //Display Control 9-10 [09 09] EQS=56, EQP=120
-            (0x3E), 1, 0x38,    //Cycle Control 5 [38]  
-            (0x40), 1, 0x0F,    //Cycle Control 6 [03]  GDON=15
-            (0x41), 1, 0xF0,    //Cycle Control 14 [F8] GDOF=248
-
-            (0x19), 1, 0x2D,    //OSC Control 1 [86] CADJ=2, CUADJ=6, OSCEN=1
-            (0x93), 1, 0x06,    //SAP Idle mode [00] ???  .nhd
-            TFTLCD_DELAY8, 80,
-            (0x20), 1, 0x40,    //Power Control 6 [40]
-            (0x1D), 3, 0x07, 0x00, 0x04,        //Power Control 3-5 [04 00 06] VC=7
-            (0x44), 2, 0x3C, 0x12,      //VCOM Control 2-3 [5A 11] VCM=60, VDV=18
-            TFTLCD_DELAY8, 80,
-            (0x1C), 1, 0x04,    //Power Control 2 [04]
-            TFTLCD_DELAY8, 80,
-            (0x43), 1, 0x80,    //VCOM Control 1 [80]
-            TFTLCD_DELAY8, 80,
-            (0x1B), 1, 0x08,    //Power Control 1 [00] DK=1
-            TFTLCD_DELAY8, 80,
-            (0x1B), 1, 0x10,    //Power Control 1 [00] PON=1
-            TFTLCD_DELAY8, 80,
-            (0x90), 1, 0x7F,    //Display Control 8 [0A]
-            (0x26), 1, 0x04,    //Display Control 1 [A0] D=1
-            TFTLCD_DELAY8, 80,
-            (0x26), 1, 0x24,    //Display Control 1 [A0] GON=1, D=1
-            (0x26), 1, 0x2C,    //Display Control 1 [A0] GON=1, D=3 
-            TFTLCD_DELAY8, 80,
-            (0x26), 1, 0x3C,    //Display Control 1 [A0] GON=1, DTE=1, D=3
-            (0x57), 1, 0x02,    //?
-            (0x55), 1, 0x00,    //?
-            (0x57), 1, 0x00,    //? 
-        };
-        // Atmel ASF code uses VCOM2-3: 0x38, 0x12. 50ms delays and no TEST mode changes.
-        init_table(HX8347A_NHD_regValues, sizeof(HX8347A_NHD_regValues));
-        //        init_table(HX8347A_CMO32_regValues, sizeof(HX8347A_CMO32_regValues));
-        //        init_table(HX8347A_CMO24_regValues, sizeof(HX8347A_CMO24_regValues));
-        //        init_table(HX8347A_ITDB02_regValues, sizeof(HX8347A_ITDB02_regValues));
-        //        init_table(HX8347G_2_regValues, sizeof(HX8347G_2_regValues));
-        break;
-#endif
 
     case 0x8357:                //BIG CHANGE: HX8357-B is now 0x8357
         _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | REV_SCREEN;
@@ -2128,9 +1243,9 @@ case 0x4532:    // thanks Leodino
             TFTLCD_DELAY8, 1,  //dummy table
         };
         table8_ads = HX8357C_regValues, table_size = sizeof(HX8357C_regValues);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 320;
         break;
 
@@ -2143,207 +1258,16 @@ case 0x4532:    // thanks Leodino
             (0xB6), 1, 0x25,   // SETCOM [4B 00] -2.5V+37*0.02V=-1.76V [-1.00V]
             (0xC0), 6, 0x50, 0x50, 0x01, 0x3C, 0x1E, 0x08,  // SETSTBA [73 50 00 3C C4 08]
             (0xB4), 7, 0x02, 0x40, 0x00, 0x2A, 0x2A, 0x0D, 0x78, // SETCYC [02 40 00 2A 2A 0D 96]
-#ifdef SUPPORT_8357D_GAMMA
-            // HX8357D_SETGAMMA [0B 0C 11 1D 25 37 43 4B 4E 47 41 39 35 31 2E 21 1C 1D 1D 26 31 44 4E 56 44 3F 39 33 31 2E 28 1D E0 01]
-            (0xE0),34, 0x02, 0x0A, 0x11, 0x1D, 0x23, 0x35, 0x41, 0x4B, 0x4B, 0x42, 0x3A, 0x27, 0x1B, 0x08, 0x09, 0x03, 0x02, 0x0A, 0x11, 0x1D, 0x23, 0x35, 0x41, 0x4B, 0x4B, 0x42, 0x3A, 0x27, 0x1B, 0x08, 0x09, 0x03, 0x00, 0x01,
-#endif
         };
         table8_ads = HX8357_99_regValues, table_size = sizeof(HX8357_99_regValues);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 320;
         break;
 
-#ifdef SUPPORT_8230
-    case 0x8230:    //thanks Auzman
-        _lcd_capable = 0 | REV_SCREEN | INVERT_GS | INVERT_RGB | READ_BGR;
-        static const uint16_t UC8230_regValues[] PROGMEM = {
-            //After pin Reset wait at least 100ms
-            TFTLCD_DELAY, 100, //at least 100ms
-            0x0046, 0x0002, //MTP Disable
-            0x0010, 0x1590, //SAP=1, BT=5, APE=1, AP=1
-            0x0011, 0x0227, //DC1=2, DC0=2, VC=7
-            0x0012, 0x80ff, //P5VMD=1, PON=7, VRH=15
-            0x0013, 0x9c31, //VDV=28, VCM=49
-            TFTLCD_DELAY, 10, //at least 10ms
-            0x0002, 0x0300, //set N-line = 1
-            0x0003, 0x1030, //set GRAM writing direction & BGR=1
-            0x0060, 0xa700, //GS; gate scan: start position & drive line Q'ty
-            0x0061, 0x0001, //REV, NDL, VLE
-            /*--------------------Gamma control------------------------*/
-            0x0030, 0x0303,
-            0x0031, 0x0303,
-            0x0032, 0x0303,
-            0x0033, 0x0300,
-            0x0034, 0x0003,
-            0x0035, 0x0303,
-            0x0036, 0x1400,
-            0x0037, 0x0303,
-            0x0038, 0x0303,
-            0x0039, 0x0303,
-            0x003a, 0x0300,
-            0x003b, 0x0003,
-            0x003c, 0x0303,
-            0x003d, 0x1400,
-            //-----------------------------------------------------------//
-            0x0020, 0x0000, //GRAM horizontal address
-            0x0021, 0x0000, //GRAM vertical address
-            //************** Partial Display control*********************//
-            0x0080, 0x0000,
-            0x0081, 0x0000,
-            0x0082, 0x0000,
-            0x0083, 0x0000,
-            0x0084, 0x0000,
-            0x0085, 0x0000,
-            //-----------------------------------------------------------//
-            0x0092, 0x0200,
-            0x0093, 0x0303,
-            0x0090, 0x0010, //set clocks/Line
-            0x0000, 0x0001,
-            TFTLCD_DELAY, 200, // Delay 200 ms
-            0x0007, 0x0173, //Display on setting
-        };
-        init_table16(UC8230_regValues, sizeof(UC8230_regValues));
-        break;
-#endif
 
-#ifdef SUPPORT_9163
-    case 0x9163:                //
-        _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | READ_24BITS;
-        static const uint8_t PROGMEM table9163C[] = {
-            //  (COMMAND_BYTE), n, data_bytes....
-            0x26, 1, 0x02,       // [01] GAMMASET use CURVE=1, 2, 4, 8
-            0xB1, 2, 0x08, 0x02, // [0E 14] FRMCTR1 if GM==011 61.7Hz
-            0xB4, 1, 0x07,       // [02] INVCTR
-            0xB8, 1, 0x01,       // [00] GSCTRL
-            0xC0, 2, 0x0A, 0x02, // [0A 05] PWCTR1 if LCM==10
-            0xC1, 1, 0x02,       // [07] PWCTR2
-            0xC5, 2, 0x50, 0x63, // [43 4D] VMCTR1
-            0xC7, 1, 0,          // [40] VCOMOFFS
-        };
-        table8_ads = table9163C, table_size = sizeof(table9163C);   //
-        p16 = (int16_t *) & HEIGHT;
-        *p16 = 160;
-        p16 = (int16_t *) & WIDTH;
-        *p16 = 128;
-        break;
-#endif
 
-#ifdef SUPPORT_9225
-#define ILI9225_DRIVER_OUTPUT_CTRL      (0x01u)  // Driver Output Control
-#define ILI9225_LCD_AC_DRIVING_CTRL     (0x02u)  // LCD AC Driving Control
-#define ILI9225_ENTRY_MODE                (0x03u)  // Entry Mode
-#define ILI9225_DISP_CTRL1              (0x07u)  // Display Control 1
-#define ILI9225_BLANK_PERIOD_CTRL1      (0x08u)  // Blank Period Control
-#define ILI9225_FRAME_CYCLE_CTRL        (0x0Bu)  // Frame Cycle Control
-#define ILI9225_INTERFACE_CTRL          (0x0Cu)  // Interface Control
-#define ILI9225_OSC_CTRL                (0x0Fu)  // Osc Control
-#define ILI9225_POWER_CTRL1             (0x10u)  // Power Control 1
-#define ILI9225_POWER_CTRL2             (0x11u)  // Power Control 2
-#define ILI9225_POWER_CTRL3             (0x12u)  // Power Control 3
-#define ILI9225_POWER_CTRL4             (0x13u)  // Power Control 4
-#define ILI9225_POWER_CTRL5             (0x14u)  // Power Control 5
-#define ILI9225_VCI_RECYCLING           (0x15u)  // VCI Recycling
-#define ILI9225_RAM_ADDR_SET1           (0x20u)  // Horizontal GRAM Address Set
-#define ILI9225_RAM_ADDR_SET2           (0x21u)  // Vertical GRAM Address Set
-#define ILI9225_GRAM_DATA_REG           (0x22u)  // GRAM Data Register
-#define ILI9225_GATE_SCAN_CTRL          (0x30u)  // Gate Scan Control Register
-#define ILI9225_VERTICAL_SCROLL_CTRL1   (0x31u)  // Vertical Scroll Control 1 Register
-#define ILI9225_VERTICAL_SCROLL_CTRL2   (0x32u)  // Vertical Scroll Control 2 Register
-#define ILI9225_VERTICAL_SCROLL_CTRL3   (0x33u)  // Vertical Scroll Control 3 Register
-#define ILI9225_PARTIAL_DRIVING_POS1    (0x34u)  // Partial Driving Position 1 Register
-#define ILI9225_PARTIAL_DRIVING_POS2    (0x35u)  // Partial Driving Position 2 Register
-#define ILI9225_HORIZONTAL_WINDOW_ADDR1 (0x36u)  // Horizontal Address END Position   HEA
-#define ILI9225_HORIZONTAL_WINDOW_ADDR2 (0x37u)  // Horizontal Address START Position HSA
-#define ILI9225_VERTICAL_WINDOW_ADDR1   (0x38u)  // Vertical Address END Position     VEA
-#define ILI9225_VERTICAL_WINDOW_ADDR2   (0x39u)  // Vertical Address START Position   VSA
-#define ILI9225_GAMMA_CTRL1             (0x50u)  // Gamma Control 1
-#define ILI9225_GAMMA_CTRL2             (0x51u)  // Gamma Control 2
-#define ILI9225_GAMMA_CTRL3             (0x52u)  // Gamma Control 3
-#define ILI9225_GAMMA_CTRL4             (0x53u)  // Gamma Control 4
-#define ILI9225_GAMMA_CTRL5             (0x54u)  // Gamma Control 5
-#define ILI9225_GAMMA_CTRL6             (0x55u)  // Gamma Control 6
-#define ILI9225_GAMMA_CTRL7             (0x56u)  // Gamma Control 7
-#define ILI9225_GAMMA_CTRL8             (0x57u)  // Gamma Control 8
-#define ILI9225_GAMMA_CTRL9             (0x58u)  // Gamma Control 9
-#define ILI9225_GAMMA_CTRL10            (0x59u)  // Gamma Control 10
-
-#define ILI9225C_INVOFF  0x20
-#define ILI9225C_INVON   0x21
-
-    case 0x6813:
-    case 0x9226:
-        _lcd_ID = 0x9225;                //fall through
-    case 0x9225:
-        _lcd_capable = REV_SCREEN | READ_BGR;     //thanks tongbajiel
-        static const uint16_t ILI9225_regValues[] PROGMEM = {
-            /* Start Initial Sequence */
-            /* Set SS bit and direction output from S528 to S1 */
-            ILI9225_POWER_CTRL1, 0x0000, // Set SAP,DSTB,STB
-            ILI9225_POWER_CTRL2, 0x0000, // Set APON,PON,AON,VCI1EN,VC
-            ILI9225_POWER_CTRL3, 0x0000, // Set BT,DC1,DC2,DC3
-            ILI9225_POWER_CTRL4, 0x0000, // Set GVDD
-            ILI9225_POWER_CTRL5, 0x0000, // Set VCOMH/VCOML voltage
-            TFTLCD_DELAY, 40,
-
-            // Power-on sequence
-            ILI9225_POWER_CTRL2, 0x0018, // Set APON,PON,AON,VCI1EN,VC
-            ILI9225_POWER_CTRL3, 0x6121, // Set BT,DC1,DC2,DC3
-            ILI9225_POWER_CTRL4, 0x006F, // Set GVDD   /*007F 0088 */
-            ILI9225_POWER_CTRL5, 0x495F, // Set VCOMH/VCOML voltage
-            ILI9225_POWER_CTRL1, 0x0800, // Set SAP,DSTB,STB
-            TFTLCD_DELAY, 10,
-            ILI9225_POWER_CTRL2, 0x103B, // Set APON,PON,AON,VCI1EN,VC
-            TFTLCD_DELAY, 50,
-
-            ILI9225_DRIVER_OUTPUT_CTRL, 0x011C, // set the display line number and display direction
-            ILI9225_LCD_AC_DRIVING_CTRL, 0x0100, // set 1 line inversion
-            ILI9225_ENTRY_MODE, 0x1030, // set GRAM write direction and BGR=1.
-            ILI9225_DISP_CTRL1, 0x0000, // Display off
-            ILI9225_BLANK_PERIOD_CTRL1, 0x0808, // set the back porch and front porch
-            ILI9225_FRAME_CYCLE_CTRL, 0x1100, // set the clocks number per line
-            ILI9225_INTERFACE_CTRL, 0x0000, // CPU interface
-            ILI9225_OSC_CTRL, 0x0D01, // Set Osc  /*0e01*/
-            ILI9225_VCI_RECYCLING, 0x0020, // Set VCI recycling
-            ILI9225_RAM_ADDR_SET1, 0x0000, // RAM Address
-            ILI9225_RAM_ADDR_SET2, 0x0000, // RAM Address
-
-            /* Set GRAM area */
-            ILI9225_GATE_SCAN_CTRL, 0x0000,
-            ILI9225_VERTICAL_SCROLL_CTRL1, 0x00DB,
-            ILI9225_VERTICAL_SCROLL_CTRL2, 0x0000,
-            ILI9225_VERTICAL_SCROLL_CTRL3, 0x0000,
-            ILI9225_PARTIAL_DRIVING_POS1, 0x00DB,
-            ILI9225_PARTIAL_DRIVING_POS2, 0x0000,
-            ILI9225_HORIZONTAL_WINDOW_ADDR1, 0x00AF,
-            ILI9225_HORIZONTAL_WINDOW_ADDR2, 0x0000,
-            ILI9225_VERTICAL_WINDOW_ADDR1, 0x00DB,
-            ILI9225_VERTICAL_WINDOW_ADDR2, 0x0000,
-
-            /* Set GAMMA curve */
-            ILI9225_GAMMA_CTRL1, 0x0000,
-            ILI9225_GAMMA_CTRL2, 0x0808,
-            ILI9225_GAMMA_CTRL3, 0x080A,
-            ILI9225_GAMMA_CTRL4, 0x000A,
-            ILI9225_GAMMA_CTRL5, 0x0A08,
-            ILI9225_GAMMA_CTRL6, 0x0808,
-            ILI9225_GAMMA_CTRL7, 0x0000,
-            ILI9225_GAMMA_CTRL8, 0x0A00,
-            ILI9225_GAMMA_CTRL9, 0x0710,
-            ILI9225_GAMMA_CTRL10, 0x0710,
-
-            ILI9225_DISP_CTRL1, 0x0012,
-            TFTLCD_DELAY, 50,
-            ILI9225_DISP_CTRL1, 0x1017,
-        };
-        init_table16(ILI9225_regValues, sizeof(ILI9225_regValues));
-        p16 = (int16_t *) & HEIGHT;
-        *p16 = 220;
-        p16 = (int16_t *) & WIDTH;
-        *p16 = 176;
-        break;
-#endif
 
 #ifdef SUPPORT_9320
     case 0x0001:
@@ -2499,94 +1423,23 @@ case 0x4532:    // thanks Leodino
         break;
 #endif
 
-#if defined(SUPPORT_9326_5420)
-	case 0x5420:
-    case 0x9326:
-        _lcd_capable = REV_SCREEN | READ_BGR;
-        static const uint16_t ILI9326_CPT28_regValues[] PROGMEM = {
-//************* Start Initial Sequence **********//
-         0x0702, 0x3008,     //  Set internal timing, don’t change this value
-         0x0705, 0x0036,     //  Set internal timing, don’t change this value
-         0x070B, 0x1213,     //  Set internal timing, don’t change this value
-         0x0001, 0x0100,     //  set SS and SM bit
-         0x0002, 0x0100,     //  set 1 line inversion
-         0x0003, 0x1030,     //  set GRAM write direction and BGR=1.
-         0x0008, 0x0202,     //  set the back porch and front porch
-         0x0009, 0x0000,     //  set non-display area refresh cycle ISC[3:0]
-         0x000C, 0x0000,     //  RGB interface setting
-         0x000F, 0x0000,     //  RGB interface polarity
-//*************Power On sequence ****************//
-         0x0100, 0x0000,     //  SAP, BT[3:0], AP, DSTB, SLP, STB
-         0x0102, 0x0000,     //  VREG1OUT voltage
-         0x0103, 0x0000,   // VDV[4:0] for VCOM amplitude
-        TFTLCD_DELAY, 200,   // Dis-charge capacitor power voltage
-         0x0100, 0x1190,   // SAP, BT[3:0], AP, DSTB, SLP, STB
-         0x0101, 0x0227,   // DC1[2:0], DC0[2:0], VC[2:0]
-        TFTLCD_DELAY, 50,   // Delay 50ms
-         0x0102, 0x01BD,   // VREG1OUT voltage
-        TFTLCD_DELAY, 50,   // Delay 50ms
-         0x0103, 0x2D00,   // VDV[4:0] for VCOM amplitude
-         0x0281, 0x000E,   // VCM[5:0] for VCOMH
-        TFTLCD_DELAY, 50,   //
-         0x0200, 0x0000,   // GRAM horizontal Address
-         0x0201, 0x0000,   // GRAM Vertical Address
-// ----------- Adjust the Gamma Curve ----------//
-         0x0300, 0x0000,   //
-         0x0301, 0x0707,   //
-         0x0302, 0x0606,   //
-         0x0305, 0x0000,   //
-         0x0306, 0x0D00,   //
-         0x0307, 0x0706,   //
-         0x0308, 0x0005,   //
-         0x0309, 0x0007,   //
-         0x030C, 0x0000,   //
-         0x030D, 0x000A,   //
-//------------------ Set GRAM area ---------------//
-         0x0400, 0x3100,     //  Gate Scan Line 400 lines
-         0x0401, 0x0001,     //  NDL,VLE, REV
-         0x0404, 0x0000,     //  set scrolling line
-//-------------- Partial Display Control ---------//
-         0x0500, 0x0000,     // Partial Image 1 Display Position
-         0x0501, 0x0000,     // Partial Image 1 RAM Start/End Address
-         0x0502, 0x0000,     // Partial Image 1 RAM Start/End Address
-         0x0503, 0x0000,     // Partial Image 2 Display Position
-         0x0504, 0x0000,     // Partial Image 2 RAM Start/End Address
-         0x0505, 0x0000,     // Partial Image 2 RAM Start/End Address
-//-------------- Panel Control -------------------//
-         0x0010, 0x0010,     // DIVI[1:0];RTNI[4:0]
-         0x0011, 0x0600,     // NOWI[2:0];SDTI[2:0]
-         0x0020, 0x0002,     // DIVE[1:0];RTNE[5:0]
-         0x0007, 0x0173,     //  262K color and display ON
-		 };
-        init_table16(ILI9326_CPT28_regValues, sizeof(ILI9326_CPT28_regValues));
-        p16 = (int16_t *) & HEIGHT;
-        *p16 = 400;
-        p16 = (int16_t *) & WIDTH;
-        *p16 = 240;
-        break;
-#endif
 
     case 0x9327:
         _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS;
         static const uint8_t ILI9327_regValues[] PROGMEM = {
             0xB0, 1, 0x00,      //Disable Protect for cmds B1-DF, E0-EF, F0-FF 
-            //            0xE0, 1, 0x20,      //NV Memory Write [00]
-            //            0xD1, 3, 0x00, 0x71, 0x19,  //VCOM control [00 40 0F]
-            //            0xD0, 3, 0x07, 0x01, 0x08,  //Power Setting [07 04 8C]
             0xC1, 4, 0x10, 0x10, 0x02, 0x02,    //Display Timing [10 10 02 02]
             0xC0, 6, 0x00, 0x35, 0x00, 0x00, 0x01, 0x02,        //Panel Drive [00 35 00 00 01 02 REV=0,GS=0,SS=0
             0xC5, 1, 0x04,      //Frame Rate [04]
             0xD2, 2, 0x01, 0x04,        //Power Setting [01 44]
-            //            0xC8, 15, 0x04, 0x67, 0x35, 0x04, 0x08, 0x06, 0x24, 0x01, 0x37, 0x40, 0x03, 0x10, 0x08, 0x80, 0x00,
-            //            0xC8, 15, 0x00, 0x77, 0x77, 0x04, 0x04, 0x00, 0x00, 0x00, 0x77, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00,
             0xCA, 1, 0x00,      //DGC LUT ???
             0xEA, 1, 0x80,      //3-Gamma Function Enable
             //                     0xB0, 1, 0x03,      //Enable Protect
         };
         table8_ads = ILI9327_regValues, table_size = sizeof(ILI9327_regValues);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 400;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 240;
         break;
     case 0x1602:
@@ -2617,9 +1470,6 @@ case 0x4532:    // thanks Leodino
         _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | INVERT_SS | REV_SCREEN;
 	  common_9329:
         static const uint8_t ILI9329_regValues[] PROGMEM = {
-//            0xF6, 3, 0x01, 0x01, 0x00,  //Interface Control needs EXTC=1 MX_EOR=1, TM=0, RIM=0
-//            0xB6, 3, 0x0A, 0x82, 0x27,  //Display Function [0A 82 27]
-//            0xB7, 1, 0x06,      //Entry Mode Set [06]
             0x36, 1, 0x00,      //Memory Access [00] pointless but stops an empty array
         };
         table8_ads = ILI9329_regValues, table_size = sizeof(ILI9329_regValues);
@@ -2642,7 +1492,6 @@ case 0x4532:    // thanks Leodino
             0xEA, 2, 0x00, 0x00,        //Driver Timing B [66 00]
             0xB0, 1, 0x00,      //RGB Signal [00] 
             0xB1, 2, 0x00, 0x1B,        //Frame Control [00 1B]
-            //            0xB6, 2, 0x0A, 0xA2, 0x27, //Display Function [0A 82 27 XX]    .kbv SS=1  
             0xB4, 1, 0x00,      //Inversion Control [02] .kbv NLA=1, NLB=1, NLC=1
             0xC0, 1, 0x21,      //Power Control 1 [26]
             0xC1, 1, 0x11,      //Power Control 2 [00]
@@ -2655,8 +1504,6 @@ case 0x4532:    // thanks Leodino
             0xE1, 15, 0x00, 0x19, 0x1b, 0x04, 0x10, 0x07, 0x2a, 0x47, 0x39, 0x03, 0x06, 0x06, 0x30, 0x38, 0x0f,
         };
         static const uint8_t ILI9341_regValues_ada[] PROGMEM = {        // Adafruit_TFTLCD only works with EXTC=0
-            //                     0xF6, 3, 0x00, 0x01, 0x00,  //Interface Control needs EXTC=1 TM=0, RIM=0
-            //            0xF6, 3, 0x01, 0x01, 0x03,  //Interface Control needs EXTC=1 RM=1, RIM=1
             0xF6, 3, 0x09, 0x01, 0x03,  //Interface Control needs EXTC=1 RM=0, RIM=1
             0xB0, 1, 0x40,      //RGB Signal [40] RCM=2
             0xB4, 1, 0x00,      //Inversion Control [02] .kbv NLA=1, NLB=1, NLC=1
@@ -2670,48 +1517,6 @@ case 0x4532:    // thanks Leodino
         };
         table8_ads = ILI9341_regValues_2_4, table_size = sizeof(ILI9341_regValues_2_4);   //
         break;
-#if defined(SUPPORT_9342)
-    case 0x9342:
-        _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | READ_24BITS | INVERT_GS | REV_SCREEN;
-        static const uint8_t ILI9342_regValues_CPT24[] PROGMEM = {     //CPT 2.4"
-            (0xB9), 3, 0xFF, 0x93, 0x42, //[00 00 00]
-            (0xC0), 2, 0x1D, 0x0A,    //[26 09]
-            (0xC1), 1, 0x02,          //[10]
-            (0xC5), 2, 0x2F, 0x2F,    //[31 3C]
-            (0xC7), 1, 0xC3,          //[C0]
-            (0xB8), 1, 0x0B,          //[07]
-            (0xE0), 15, 0x0F, 0x33, 0x30, 0x0C, 0x0F, 0x08, 0x5D, 0x66, 0x4A, 0x07, 0x13, 0x05, 0x1B, 0x0E, 0x08,
-            (0xE1), 15, 0x08, 0x0E, 0x11, 0x02, 0x0E, 0x02, 0x24, 0x33, 0x37, 0x03, 0x0A, 0x09, 0x26, 0x33, 0x0F,
-        };
-        static const uint8_t ILI9342_regValues_Tianma23[] PROGMEM = {     //Tianma 2.3"
-            (0xB9), 3, 0xFF, 0x93, 0x42,
-            (0xC0), 2, 0x1D, 0x0A,
-            (0xC1), 1, 0x01,
-            (0xC5), 2, 0x2C, 0x2C,
-            (0xC7), 1, 0xC6,
-            (0xB8), 1, 0x09,
-            (0xE0), 15, 0x0F, 0x26, 0x21, 0x07, 0x0A, 0x03, 0x4E, 0x62, 0x3E, 0x0B, 0x11, 0x00, 0x08, 0x02, 0x00,
-            (0xE1), 15, 0x00, 0x19, 0x1E, 0x03, 0x0E, 0x03, 0x30, 0x23, 0x41, 0x03, 0x0B, 0x07, 0x2F, 0x36, 0x0F,
-        };
-        static const uint8_t ILI9342_regValues_HSD23[] PROGMEM = {     //HSD 2.3"
-            (0xB9), 3, 0xFF, 0x93, 0x42,
-            (0xC0), 2, 0x1D, 0x0A,
-            (0xC1), 1, 0x02,
-            (0xC5), 2, 0x2F, 0x27,
-            (0xC7), 1, 0xA4,
-            (0xB8), 1, 0x0B,
-            (0xE0), 15, 0x0F, 0x24, 0x21, 0x0C, 0x0F, 0x06, 0x50, 0x75, 0x3F, 0x07, 0x12, 0x05, 0x11, 0x0B, 0x08,
-            (0xE1), 15, 0x08, 0x1D, 0x20, 0x02, 0x0E, 0x04, 0x31, 0x24, 0x42, 0x03, 0x0B, 0x09, 0x30, 0x36, 0x0F,
-        };
-        table8_ads = ILI9342_regValues_CPT24, table_size = sizeof(ILI9342_regValues_CPT24);   //
-        //        table8_ads = ILI9342_regValues_Tianma23, table_size = sizeof(ILI9342_regValues_Tianma23);   //
-        //        table8_ads = ILI9342_regValues_HSD23, table_size = sizeof(ILI9342_regValues_HSD23);   //
-        p16 = (int16_t *) & HEIGHT;
-        *p16 = 240;
-        p16 = (int16_t *) & WIDTH;
-        *p16 = 320;
-        break;
-#endif
     case 0x1581:                        //no BGR in MADCTL.  set BGR in Panel Control
         _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | READ_24BITS; //thanks zdravke
 		goto common_9481;
@@ -2802,26 +1607,15 @@ case 0x4532:    // thanks Leodino
 			0xB3, 4, 0x00, 0x01, 0x06, 0x30,  //jpegs example
         };
         table8_ads = ILI9481_regValues, table_size = sizeof(ILI9481_regValues);
-//        table8_ads = ILI9481_CPT29_regValues, table_size = sizeof(ILI9481_CPT29_regValues);
-//        table8_ads = ILI9481_PVI35_regValues, table_size = sizeof(ILI9481_PVI35_regValues);
-//        table8_ads = ILI9481_AUO317_regValues, table_size = sizeof(ILI9481_AUO317_regValues);
-//        table8_ads = ILI9481_CMO35_regValues, table_size = sizeof(ILI9481_CMO35_regValues);
-//        table8_ads = ILI9481_RGB_regValues, table_size = sizeof(ILI9481_RGB_regValues);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 320;
         break;
     case 0x9486:
         _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS; //Red 3.5", Blue 3.5"
 //        _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | REV_SCREEN; //old Red 3.5"
         static const uint8_t ILI9486_regValues[] PROGMEM = {
-/*
-            0xF2, 9, 0x1C, 0xA3, 0x32, 0x02, 0xB2, 0x12, 0xFF, 0x12, 0x00,        //f.k
-            0xF1, 2, 0x36, 0xA4,        //
-            0xF8, 2, 0x21, 0x04,        //
-            0xF9, 2, 0x00, 0x08,        //
-*/
             0xC0, 2, 0x0d, 0x0d,        //Power Control 1 [0E 0E]
             0xC1, 2, 0x43, 0x00,        //Power Control 2 [43 00]
             0xC2, 1, 0x00,      //Power Control 3 [33]
@@ -2854,9 +1648,9 @@ case 0x4532:    // thanks Leodino
 #endif
         };
         table8_ads = ILI9486_regValues, table_size = sizeof(ILI9486_regValues);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 320;
         break;
     case 0x7796:
@@ -2866,9 +1660,9 @@ case 0x4532:    // thanks Leodino
             0xE8, 8, 0x40, 0x8A, 0x00, 0x00, 0x29, 0x19, 0xA5, 0x33, //Adj3 [40 8A 00 00 25 0A 38 33]
         };
         table8_ads = ST7796_regValues, table_size = sizeof(ST7796_regValues);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 320;
         break;
         //goto common_9488;
@@ -2890,9 +1684,9 @@ case 0x4532:    // thanks Leodino
             0xF7, 4, 0xA9, 0x51, 0x2C, 0x82,    //Adjustment Control 3 [A9 51 2C 82]
         };
         table8_ads = ILI9488_regValues_max, table_size = sizeof(ILI9488_regValues_max);
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 320;
         break;
     case 0xB505:                //R61505V
@@ -3013,46 +1807,13 @@ case 0x4532:    // thanks Leodino
             0x0201, 0x0000,
         };
         init_table16(R61509V_regValues, sizeof(R61509V_regValues));
-        p16 = (int16_t *) & HEIGHT;
+        p16 = (int32_t *) & HEIGHT;
         *p16 = 400;
         break;
 #endif
 
-#ifdef SUPPORT_9806
-    case 0x9806:
-        _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | READ_24BITS;
-        // from ZinggJM
-        static const uint8_t ILI9806_regValues[] PROGMEM = {
-            (0xFF), 3, /* EXTC Command Set enable register*/ 0xFF, 0x98, 0x06,
-            (0xBA), 1, /* SPI Interface Setting*/0xE0,
-            (0xBC), 21, /* GIP 1*/0x03, 0x0F, 0x63, 0x69, 0x01, 0x01, 0x1B, 0x11, 0x70, 0x73, 0xFF, 0xFF, 0x08, 0x09, 0x05, 0x00, 0xEE, 0xE2, 0x01, 0x00, 0xC1,
-            (0xBD), 8, /* GIP 2*/0x01, 0x23, 0x45, 0x67, 0x01, 0x23, 0x45, 0x67,
-            (0xBE), 9, /* GIP 3*/0x00, 0x22, 0x27, 0x6A, 0xBC, 0xD8, 0x92, 0x22, 0x22,
-            (0xC7), 1, /* Vcom*/0x1E,
-            (0xED), 3, /* EN_volt_reg*/0x7F, 0x0F, 0x00,
-            (0xC0), 3, /* Power Control 1*/0xE3, 0x0B, 0x00,
-            (0xFC), 1, 0x08,
-            (0xDF), 6, /* Engineering Setting*/0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
-            (0xF3), 1, /* DVDD Voltage Setting*/0x74,
-            (0xB4), 3, /* Display Inversion Control*/0x00, 0x00, 0x00,
-            (0xF7), 1, /* 480x854*/0x81,
-            (0xB1), 3, /* Frame Rate*/0x00, 0x10, 0x14,
-            (0xF1), 3, /* Panel Timing Control*/0x29, 0x8A, 0x07,
-            (0xF2), 4, /*Panel Timing Control*/0x40, 0xD2, 0x50, 0x28,
-            (0xC1), 4, /* Power Control 2*/0x17, 0x85, 0x85, 0x20,
-            (0xE0), 16, 0x00, 0x0C, 0x15, 0x0D, 0x0F, 0x0C, 0x07, 0x05, 0x07, 0x0B, 0x10, 0x10, 0x0D, 0x17, 0x0F, 0x00,
-            (0xE1), 16, 0x00, 0x0D, 0x15, 0x0E, 0x10, 0x0D, 0x08, 0x06, 0x07, 0x0C, 0x11, 0x11, 0x0E, 0x17, 0x0F, 0x00,
-            (0x35), 1, /*Tearing Effect ON*/0x00,
-        };
-        table8_ads = ILI9806_regValues, table_size = sizeof(ILI9806_regValues);
-        p16 = (int16_t *) & HEIGHT;
-        *p16 = 480;
-        p16 = (int16_t *) & WIDTH;
-        *p16 = 854;
-        break;
-#endif
     default:
-        p16 = (int16_t *) & WIDTH;
+        p16 = (int32_t *) & WIDTH;
         *p16 = 0;       //error value for WIDTH
         break;
     }
@@ -3080,7 +1841,7 @@ case 0x4532:    // thanks Leodino
 		is555 = 0;
 		drawPixel(0, 0, 0xFFE0);
 		if (readPixel(0, 0) == 0xFF1F) {
-			uint8_t pixfmt = 0x06;
+			uint32_t pixfmt = 0x06;
 			pushCommand(0x3A, &pixfmt, 1);
 			_lcd_capable &= ~READ_24BITS;
 			is555 = 1;
