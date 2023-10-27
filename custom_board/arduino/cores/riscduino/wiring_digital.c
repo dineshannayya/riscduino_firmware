@@ -10,6 +10,9 @@ pinMode(uint32_t pin, uint32_t mode)
   
   if (pin >= variant_pin_map_size)
     return;
+
+  if(pin == 0 || pin == 1) // for Arduino 0/1 are uart pin, remove uart mode
+      GLBL_REG(GLBL_MULTI_FUNC) &= ~IOF0_MUART_ENB;
   
   switch (mode) {
   case INPUT_PULLUP:
