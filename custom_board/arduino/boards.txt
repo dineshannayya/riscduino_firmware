@@ -6,7 +6,7 @@ menu.toolsloc=Tool Install Location
 uno.name=Riscduino Uno
 uno.menu.toolsloc.default=Default
 uno.menu.toolsloc.manual=Manual
-uno.menu.toolsloc.default.compiler.path={runtime.tools.riscv64-unknown-elf-gcc.path}/bin/
+uno.menu.toolsloc.default.compiler.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
 uno.menu.toolsloc.manual.compiler.path=
 
 uno.vid.0=0x2341
