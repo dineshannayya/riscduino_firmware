@@ -21,7 +21,7 @@ void SPIClass::begin() {
   
   GLBL_REG(GLBL_CFG0)  |= IOF0_SPI_RST;
   GLBL_REG(GLBL_MULTI_FUNC)  |= IOF0_SPI_ENB;
-  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(SPI_CLOCK_DIV4) | SPI_CTRL_MODE (SPI_MODE2) | SPI_CTRL_BIT_ENDIAN(SPI_ENDIAN_BIG);
+  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(SPI_CLOCK_DIV4) | SPI_CTRL_MODE (SPI_MODE0) | SPI_CTRL_BIT_ENDIAN(SPI_ENDIAN_BIG);
 
 }
 
@@ -45,7 +45,7 @@ void SPIClass::beginTransaction(SPISettings settings)
 {
   // before starting a transaction, set SPI peripheral to desired mode
 
-  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP(SPI_DIR_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(settings.sckdiv) | SPI_CTRL_MODE (settings.sckmode);
+  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(settings.sckdiv) | SPI_CTRL_MODE (settings.sckmode) | SPI_CTRL_BIT_ENDIAN(SPI_ENDIAN_BIG);
   
 
 }
@@ -99,8 +99,9 @@ byte SPIClass::transfer(uint8_t _data, SPITransferMode _mode) {
   while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
   SPI_REG(SPI_REG_WDATA) = _data;
   
+  SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_OP(3) ;    // Reset the Type
   SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_TSIZE(3) ; // Reset Transfer Size
-  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0);  // Set to Write+RD Mode & Transfer Size: 1 Byte & Request 
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0);  // Set to Write Mode & Transfer Size: 1 Byte & Request 
 
   
   while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
@@ -118,7 +119,7 @@ byte SPIClass::write_transfer(uint8_t _data, SPITransferMode _mode) {
   
   SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_OP(3) ;    // Reset the Type
   SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_TSIZE(3) ; // Reset Transfer Size
-  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP(SPI_DIR_TX) | SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0);  // Set to Write Mode & Transfer Size: 1 Byte & Request 
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0);  // Set to Write Mode & Transfer Size: 1 Byte & Request 
 }
 
 byte SPIClass::transfer(byte _pin, uint8_t _data, SPITransferMode _mode) {
