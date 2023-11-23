@@ -21,7 +21,8 @@ void SPIClass::begin() {
   
   GLBL_REG(GLBL_CFG0)  |= IOF0_SPI_RST;
   GLBL_REG(GLBL_MULTI_FUNC)  |= IOF0_SPI_ENB;
-  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(SPI_CLOCK_DIV4) | SPI_CTRL_MODE (SPI_MODE0) | SPI_CTRL_BIT_ENDIAN(SPI_ENDIAN_BIG);
+  GLBL_REG(GLBL_MULTI_FUNC)  |= IOF0_SPI_CS0_ENB;
+  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_CS_BIT(0x40) | SPI_CTRL_CS_TIM (0x2) | SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(SPI_CLOCK_DIV2) | SPI_CTRL_MODE (SPI_MODE0) | SPI_CTRL_BIT_ENDIAN(SPI_ENDIAN_BIG);
 
 }
 
@@ -85,7 +86,9 @@ void SPIClass::setDataMode(uint8_t _pin, uint8_t _mode) {
 }
 
 void SPIClass::setClockDivider(uint8_t _divider) {
-  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_SCK(_divider);
+  SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_SCK(6) ;    // Reset the Type
+  //SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_SCK(_divider); -- Temp Masked
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_SCK(SPI_CLOCK_DIV2);
 }
 
 void SPIClass::setClockDivider(uint8_t _pin, uint8_t _divider) {
@@ -107,6 +110,7 @@ byte SPIClass::transfer(uint8_t _data, SPITransferMode _mode) {
   while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
   // return SPI_Read(spi);
   x = SPI_REG(SPI_REG_RDATA);
+  return x;
   
 }
 
@@ -120,6 +124,7 @@ byte SPIClass::write_transfer(uint8_t _data, SPITransferMode _mode) {
   SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_OP(3) ;    // Reset the Type
   SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_TSIZE(3) ; // Reset Transfer Size
   SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0);  // Set to Write Mode & Transfer Size: 1 Byte & Request 
+  return 0;
 }
 
 byte SPIClass::transfer(byte _pin, uint8_t _data, SPITransferMode _mode) {
@@ -174,10 +179,8 @@ void SPIClass::transfer(byte _pin, void *_buf, size_t _count, SPITransferMode _m
 
 
   volatile int32_t x;
-  uint8_t r,d;
+  uint8_t r;
   while (_count > 1) {
-    // Prepare next byte
-    d = *(buffer+1);
     // Read transferred byte and send next one straight away
     r = x & 0xFF;
 

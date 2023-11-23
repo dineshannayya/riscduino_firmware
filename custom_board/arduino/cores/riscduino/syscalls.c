@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <limits.h>
+#include <unistd.h>
 #include <sys/signal.h>
 #include "util.h"
 
@@ -89,9 +90,9 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
 {
   register const char* p;
   const char* last_fmt;
-  register int ch, err;
+  register int ch;
   unsigned long long num;
-  int base, lflag, width, precision, altflag;
+  int base, lflag, width, precision;
   char padc;
 
   while (1) {
@@ -109,7 +110,6 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
     width = -1;
     precision = -1;
     lflag = 0;
-    altflag = 0;
   reswitch:
     switch (ch = *(unsigned char *) fmt++) {
 
@@ -151,7 +151,6 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
       goto reswitch;
 
     case '#':
-      altflag = 1;
       goto reswitch;
 
     process_precision:

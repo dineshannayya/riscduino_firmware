@@ -42,7 +42,6 @@ void analogWrite(uint32_t pin, uint32_t ulValue)
 {
 
   volatile uint32_t pwm_num;
-  volatile uint32_t pwm_cmp_num;
   uint32_t pwm_period;
   
   if (pin > variant_pin_map_size) {
@@ -50,8 +49,6 @@ void analogWrite(uint32_t pin, uint32_t ulValue)
   }
 
   pwm_num = variant_pin_map[pin].pwm_num;
-  pwm_cmp_num = variant_pin_map[pin].pwm_cmp_num;
-
   if (pwm_num > variant_pwm_size) {
     return;
   }
@@ -60,6 +57,8 @@ void analogWrite(uint32_t pin, uint32_t ulValue)
 
   
  #if (RISCDUINO_SOC >= 122023) // for SOC from MPW-7 onwards
+  volatile uint32_t pwm_cmp_num;
+  pwm_cmp_num = variant_pin_map[pin].pwm_cmp_num;
   // This also sets the scale to 0.
   if (!pwm_enabled[pwm_num]) {
     *((volatile uint32_t*) (variant_pwm[pwm_num] + PWM_CFG))   = 0;
