@@ -6,13 +6,23 @@ version=1.0.3
 
 ## Setting riscv32-unknown-elf-gcc
 compiler.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
-compiler.c.cmd=riscv32-unknown-elf-gcc
-compiler.cpp.cmd=riscv32-unknown-elf-g++
-compiler.ld.cmd=riscv32-unknown-elf-ld
-compiler.ar.cmd=riscv32-unknown-elf-ar
-compiler.objcopy.cmd=riscv32-unknown-elf-objcopy
-compiler.elf2hex.cmd=riscv32-unknown-elf-objcopy
-compiler.size.cmd=riscv32-unknown-elf-size
+compiler.c.cmd.linux=riscv32-unknown-elf-gcc
+compiler.cpp.cmd.linux=riscv32-unknown-elf-g++
+compiler.ld.cmd.linux=riscv32-unknown-elf-ld
+compiler.ar.cmd.linux=riscv32-unknown-elf-ar
+compiler.objcopy.cmd.linux=riscv32-unknown-elf-objcopy
+compiler.elf2hex.cmd.linux=riscv32-unknown-elf-objcopy
+compiler.size.cmd.linux=riscv32-unknown-elf-size
+
+compiler.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
+compiler.c.cmd.windows=riscv64-unknown-elf-gcc
+compiler.cpp.cmd.windows=riscv64-unknown-elf-g++
+compiler.ld.cmd.windows=riscv64-unknown-elf-ld
+compiler.ar.cmd.windows=riscv64-unknown-elf-ar
+compiler.objcopy.cmd.windows=riscv64-unknown-elf-objcopy
+compiler.elf2hex.cmd.windows=riscv64-unknown-elf-objcopy
+compiler.size.cmd.windows=riscv64-unknown-elf-size
+
 
 
 compiler.sdk.path={runtime.platform.path}/sdk/bsp
