@@ -300,13 +300,11 @@ void Riscduino_SPITFT::writeColor(uint16_t color, uint32_t len) {
   if (!len)
     return; // Avoid 0-byte transfers
 
-  uint8_t hi = color >> 8, lo = color;
 
   // All other cases (non-DMA hard SPI, bitbang SPI, parallel)...
 
     while (len--) {
-      hwspi._spi->transfer(hi);
-      hwspi._spi->transfer(lo);
+      hwspi._spi->transfer16(color);
     }
 }
 
@@ -1014,11 +1012,8 @@ inline bool Riscduino_SPITFT::SPI_MISO_READ(void) {
     @param  w  16-bit value to write.
 */
 void Riscduino_SPITFT::SPI_WRITE16(uint16_t w) {
-  if (connection == TFT_HARD_SPI) {
     // MSB, LSB because TFTs are generally big-endian
-    hwspi._spi->transfer(w >> 8);
-    hwspi._spi->transfer(w);
-  } 
+    hwspi._spi->transfer16(w);
 }
 
 /*!
@@ -1032,12 +1027,7 @@ void Riscduino_SPITFT::SPI_WRITE16(uint16_t w) {
     @param  l  32-bit value to write.
 */
 void Riscduino_SPITFT::SPI_WRITE32(uint32_t l) {
-  if (connection == TFT_HARD_SPI) {
-    hwspi._spi->transfer(l >> 24);
-    hwspi._spi->transfer(l >> 16);
-    hwspi._spi->transfer(l >> 8);
-    hwspi._spi->transfer(l);
-  } 
+    hwspi._spi->transfer32(l);
 }
 
 /*!
