@@ -19,7 +19,7 @@
 #define SPI_CTRL_TSEL(x)          (((x) & 0x3) << 23)    // target chip select
 #define SPI_CTRL_BYTE_ENDIAN(x)   (((x) & 0x1) << 25)    // Byte Endian, 0 - little, 1 - Big
 #define SPI_CTRL_MODE(x)          (((x) & 0x3) << 26)    // SPI Mode
-#define SPI_CTRL_BIT_ENDIAN(x)    (((x) & 0x1) << 25)    // Bit Endian, 1 -> LSBFIRST or  0 -> MSBFIRST
+#define SPI_CTRL_BIT_ENDIAN(x)    (((x) & 0x1) << 28)    // Bit Endian, 1 -> LSBFIRST or  0 -> MSBFIRST
 
 
 #define SPI_CTRL_OP_REQ(x)    (((x) & 0x1) << 31)    // cpu request

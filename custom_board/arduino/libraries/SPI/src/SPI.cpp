@@ -21,7 +21,7 @@ void SPIClass::begin() {
   
   GLBL_REG(GLBL_CFG0)  |= IOF0_SPI_RST;
   GLBL_REG(GLBL_MULTI_FUNC)  |= IOF0_SPI_ENB;
-  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(SPI_CLOCK_DIV4) | SPI_CTRL_MODE (SPI_MODE2) | SPI_CTRL_BIT_ENDIAN(SPI_ENDIAN_BIG);
+  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(SPI_CLOCK_DIV4) | SPI_CTRL_MODE (SPI_MODE0) | SPI_CTRL_BIT_ENDIAN(SPI_ENDIAN_BIG);
 
 }
 
@@ -45,8 +45,9 @@ void SPIClass::beginTransaction(SPISettings settings)
 {
   // before starting a transaction, set SPI peripheral to desired mode
 
-  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP(SPI_DIR_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(settings.sckdiv) | SPI_CTRL_MODE (settings.sckmode);
-  
+  SPI_REG(SPI_REG_CTRL) = (SPI_REG(SPI_REG_CTRL) & ~SPI_CTRL_OP(0x3) & ~SPI_CTRL_TSIZE(0x3) & ~SPI_CTRL_SCK(0x3F) & ~SPI_CTRL_MODE(0x3)) |
+                          SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(settings.sckdiv) | SPI_CTRL_MODE(SPI_MODE0);
+                          //SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(settings.sckdiv) | SPI_CTRL_MODE(settings.sckmode);
 
 }
 
@@ -85,7 +86,7 @@ void SPIClass::setDataMode(uint8_t _pin, uint8_t _mode) {
 }
 
 void SPIClass::setClockDivider(uint8_t _divider) {
-  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_SCK(_divider);
+  SPI_REG(SPI_REG_CTRL) = (SPI_REG(SPI_REG_CTRL) & ~SPI_CTRL_SCK(0x3F)) | SPI_CTRL_SCK(_divider);
 }
 
 void SPIClass::setClockDivider(uint8_t _pin, uint8_t _divider) {
@@ -106,6 +107,7 @@ byte SPIClass::transfer(uint8_t _data, SPITransferMode _mode) {
   while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
   // return SPI_Read(spi);
   x = SPI_REG(SPI_REG_RDATA);
+  return x;
   
 }
 
