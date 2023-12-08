@@ -20,7 +20,7 @@
 //   - endTransaction()
 //   - usingInterrupt()
 //   - SPISetting(clock, bitOrder, dataMode)
-#define SPI_HAS_TRANSACTION 1
+//#define SPI_HAS_TRANSACTION 1
 
 // SPI_HAS_EXTENDED_CS_PIN_HANDLING means SPI has automatic 
 // CS pin handling and provides the following methods:
@@ -97,15 +97,18 @@ class SPIClass {
 	SPIClass(uint32_t _id);
 
 	// Transfer functions where the hardware controls the SS line
-	byte transfer(byte _pin, uint8_t _data, SPITransferMode _mode = SPI_LAST);
-	uint16_t transfer16(byte _pin, uint16_t _data, SPITransferMode _mode = SPI_LAST);
-	uint16_t transfer16(uint16_t _data, SPITransferMode _mode = SPI_LAST);
+	uint16_t transfer16(byte _pin, uint16_t _data, SPITransferMode _mode);
+	uint16_t transfer16(uint16_t _data, SPITransferMode _mode);
+	uint16_t transfer16(uint16_t _data);
 	void transfer(byte _pin, void *_buf, size_t _count, SPITransferMode _mode = SPI_LAST);
 
 	// Transfer functions where the user controls the SS line
+	byte transfer(byte _pin, uint8_t _data, SPITransferMode _mode = SPI_LAST);
 	byte transfer(uint8_t _data, SPITransferMode _mode = SPI_LAST);
 	byte write_transfer(uint8_t _data, SPITransferMode _mode = SPI_LAST);
 	void transfer(void *_buf, size_t _count, SPITransferMode _mode = SPI_LAST);
+
+	uint32_t transfer32(uint32_t _data);
 
 	// Transaction Functions
 	void usingInterrupt(uint8_t interruptNumber);

@@ -27,7 +27,6 @@
 // Real-Time Clock, not just external interrupts.
 static voidFuncPtr callbacksInt[PLIC_NUM_INTERRUPTS];
 
-static plic_instance_t g_plic;
 
 /* Configure I/O interrupt sources */
 static void __initialize()

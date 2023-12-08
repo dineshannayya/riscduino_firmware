@@ -149,6 +149,15 @@ UARTClass::availableForWrite(void)
   return (!busy);
 }
 
+// TX Fifo Empty
+int
+UARTClass::txFifoEmpty(void)
+{
+  int empty;
+  empty = (((int32_t)UART_REG(base,UART_REG_TXFIFO_STATUS)) == 0x10);
+  return (empty);
+}
+
 
 int
 UARTClass::peek(void)

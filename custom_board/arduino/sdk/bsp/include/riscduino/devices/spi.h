@@ -41,8 +41,11 @@
 #define SPI_LEN_2               2
 #define SPI_LEN_3               3
 
-#define SPI_ENDIAN_LITTEL       1
-#define SPI_ENDIAN_BIG          0
+#define SPI_BIT_ENDIAN_LITTEL   1
+#define SPI_BIT_ENDIAN_BIG      0
+
+#define SPI_BYTE_ENDIAN_LITTEL  0
+#define SPI_BYTE_ENDIAN_BIG     1
 
 #define SPI_CLOCK_DIV2          1
 #define SPI_CLOCK_DIV4          3

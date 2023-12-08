@@ -33,6 +33,7 @@ class UARTClass : public HardwareSerial
     void end(void);
     int available(void);
     int availableForWrite(void);
+    int txFifoEmpty(void);
     int peek(void);
     int read(void);
     void flush(void);

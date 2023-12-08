@@ -41,18 +41,18 @@
 class TwoWire : public Stream
 {
   private:
-    static uint8_t rxBuffer[];
-    static uint8_t rxBufferIndex;
-    static uint8_t rxBufferLength;
+    static uint32_t rxBuffer[];
+    static uint32_t rxBufferIndex;
+    static uint32_t rxBufferLength;
 
-    static uint8_t txAddress;
-    static uint8_t txBuffer[];
-    static uint8_t txBufferIndex;
-    static uint8_t txBufferLength;
+    static uint32_t txAddress;
+    static uint32_t txBuffer[];
+    static uint32_t txBufferIndex;
+    static uint32_t txBufferLength;
     
-    static uint8_t status;
+    static uint32_t status;
 
-    static uint8_t transmitting;
+    static uint32_t transmitting;
     static void (*user_onRequest)(void);
     static void (*user_onReceive)(int);
     static void onRequestService(void);
@@ -77,12 +77,12 @@ class TwoWire : public Stream
     uint8_t requestFrom(uint8_t, uint8_t, uint32_t, uint8_t, uint8_t);
     uint8_t requestFrom(int, int);
     uint8_t requestFrom(int, int, int);
-    uint8_t readFrom(uint8_t , uint8_t *, uint8_t, uint8_t);
+    uint8_t readFrom(uint8_t , uint32_t *, uint8_t, uint8_t);
     uint8_t readByte(bool);
     uint8_t readByte();
     virtual size_t write(uint8_t);
     virtual size_t write(const uint8_t *, size_t);
-    uint8_t writeTo(uint8_t , uint8_t* , uint8_t, uint8_t, uint8_t );
+    uint8_t writeTo(uint8_t , uint32_t* , uint8_t, uint8_t, uint8_t );
     virtual int available(void);
     virtual int read(void);
     virtual int peek(void);

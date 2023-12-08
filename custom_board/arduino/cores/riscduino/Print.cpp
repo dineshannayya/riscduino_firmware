@@ -236,7 +236,7 @@ size_t Print::printNumber(unsigned long n, uint8_t base) {
     size ++;
   } while(n);
 
-  for(int i = 0; i < size; i++) {
+  for(uint8_t i = 0; i < size; i++) {
     write(buf[size-i-1]);
   }
 

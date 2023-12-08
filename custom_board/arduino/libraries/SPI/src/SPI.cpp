@@ -21,7 +21,8 @@ void SPIClass::begin() {
   
   GLBL_REG(GLBL_CFG0)  |= IOF0_SPI_RST;
   GLBL_REG(GLBL_MULTI_FUNC)  |= IOF0_SPI_ENB;
-  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(SPI_CLOCK_DIV4) | SPI_CTRL_MODE (SPI_MODE0) | SPI_CTRL_BIT_ENDIAN(SPI_ENDIAN_BIG);
+  GLBL_REG(GLBL_MULTI_FUNC)  |= IOF0_SPI_CS0_ENB;
+  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_CS_BIT(0x40) | SPI_CTRL_CS_TIM (0x2) | SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(SPI_CLOCK_DIV2) | SPI_CTRL_MODE (SPI_MODE0) | SPI_CTRL_BIT_ENDIAN(SPI_BIT_ENDIAN_BIG);
 
 }
 
@@ -45,9 +46,8 @@ void SPIClass::beginTransaction(SPISettings settings)
 {
   // before starting a transaction, set SPI peripheral to desired mode
 
-  SPI_REG(SPI_REG_CTRL) = (SPI_REG(SPI_REG_CTRL) & ~SPI_CTRL_OP(0x3) & ~SPI_CTRL_TSIZE(0x3) & ~SPI_CTRL_SCK(0x3F) & ~SPI_CTRL_MODE(0x3)) |
-                          SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(settings.sckdiv) | SPI_CTRL_MODE(SPI_MODE0);
-                          //SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(settings.sckdiv) | SPI_CTRL_MODE(settings.sckmode);
+  SPI_REG(SPI_REG_CTRL) = SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_SCK(settings.sckdiv) | SPI_CTRL_MODE (settings.sckmode) | SPI_CTRL_BIT_ENDIAN(SPI_BIT_ENDIAN_BIG) | SPI_CTRL_BYTE_ENDIAN(SPI_BYTE_ENDIAN_LITTEL);
+  
 
 }
 
@@ -86,22 +86,32 @@ void SPIClass::setDataMode(uint8_t _pin, uint8_t _mode) {
 }
 
 void SPIClass::setClockDivider(uint8_t _divider) {
-  SPI_REG(SPI_REG_CTRL) = (SPI_REG(SPI_REG_CTRL) & ~SPI_CTRL_SCK(0x3F)) | SPI_CTRL_SCK(_divider);
+  SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_SCK(0x3F) ;    // Reset the Type
+  //SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_SCK(_divider); -- Temp Masked
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_SCK(SPI_CLOCK_DIV2);
 }
 
 void SPIClass::setClockDivider(uint8_t _pin, uint8_t _divider) {
 }
 
 
+byte SPIClass::transfer(byte _pin, uint8_t _data, SPITransferMode _mode) {
+
+  // No need to do anything with the pin, because that was already
+  // set up earlier.
+  return this->transfer(_data, _mode);
+ 
+}
+
+
+// For Single Byte Transfer, LITTLE ENDIAN USED,
 byte SPIClass::transfer(uint8_t _data, SPITransferMode _mode) {
 
   // Wait for HW REQ=0
   volatile int32_t x;
-  while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
   SPI_REG(SPI_REG_WDATA) = _data;
-  
-  SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_TSIZE(3) ; // Reset Transfer Size
-  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0);  // Set to Write+RD Mode & Transfer Size: 1 Byte & Request 
+  SPI_REG(SPI_REG_CTRL) &= (~SPI_CTRL_OP(3)) & (~SPI_CTRL_TSIZE(3)) & (~SPI_CTRL_BYTE_ENDIAN(1)) & (~SPI_CTRL_CS_BIT(0xFF)) ;    // Reset the Type
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_CS_BIT(0x40) | SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_BYTE_ENDIAN(SPI_BYTE_ENDIAN_LITTEL);  // Set to Write Mode & Transfer Size: 1 Byte & Request 
 
   
   while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
@@ -115,51 +125,64 @@ byte SPIClass::write_transfer(uint8_t _data, SPITransferMode _mode) {
 
   // Wait for HW REQ=0
   volatile int32_t x;
-  while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
   SPI_REG(SPI_REG_WDATA) = _data;
+  SPI_REG(SPI_REG_CTRL) &= (~SPI_CTRL_OP(3)) & (~SPI_CTRL_TSIZE(3)) & (~SPI_CTRL_BYTE_ENDIAN(1)) & (~SPI_CTRL_CS_BIT(0xFF)) ;    // Reset the Type
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_CS_BIT(0x40) | SPI_CTRL_OP(SPI_DIR_TX) | SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0) | SPI_CTRL_BYTE_ENDIAN(SPI_BYTE_ENDIAN_LITTEL);  // Set to Write Mode & Transfer Size: 1 Byte & Request 
   
-  SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_OP(3) ;    // Reset the Type
-  SPI_REG(SPI_REG_CTRL) &= ~SPI_CTRL_TSIZE(3) ; // Reset Transfer Size
-  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_OP(SPI_DIR_TX) | SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_0);  // Set to Write Mode & Transfer Size: 1 Byte & Request 
+  while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
+  return 0;
+
 }
 
-byte SPIClass::transfer(byte _pin, uint8_t _data, SPITransferMode _mode) {
 
-  // No need to do anything with the pin, because that was already
-  // set up earlier.
-  return this->transfer(_data, _mode);
- 
+// 32 bit Write
+// For 32 Bit Transfer, BIG ENDIAN USED,
+uint32_t SPIClass::transfer32(uint32_t _data) {
+
+  // Wait for HW REQ=0
+  volatile int32_t x;
+  SPI_REG(SPI_REG_WDATA) = _data;
+  SPI_REG(SPI_REG_CTRL) &= (~SPI_CTRL_OP(3)) & (~SPI_CTRL_TSIZE(3)) & (~SPI_CTRL_BYTE_ENDIAN(1)) & (~SPI_CTRL_CS_BIT(0xFF)) ;    // Reset the Type
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_CS_BIT(0x01) | SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_3) | SPI_CTRL_BYTE_ENDIAN(SPI_BYTE_ENDIAN_BIG);  // Set to Write Mode & Transfer Size: 1 Byte & Request 
+
+  
+  while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
+  // return SPI_Read(spi);
+  x = SPI_REG(SPI_REG_RDATA);
+  return x;
+  
 }
+
 
 // Transfer 16 bit
 uint16_t SPIClass::transfer16(byte _pin, uint16_t _data, SPITransferMode _mode) {
-	union { uint16_t val; struct { uint8_t lsb; uint8_t msb; }; } t;
-	uint32_t ch = SS_PIN_TO_CS_ID(_pin);
 
-	t.val = _data;
-
-	if (bitOrder[ch] == LSBFIRST) {
-		t.lsb = transfer(_pin, t.lsb, SPI_CONTINUE);
-		t.msb = transfer(_pin, t.msb, _mode);
-	} else {
-		t.msb = transfer(_pin, t.msb, SPI_CONTINUE);
-		t.lsb = transfer(_pin, t.lsb, _mode);
-	}
-
-	return t.val;
+	return transfer16(_data);
 }
 
-// 16 bit transfer, assumed LSB first - Need to cross-check DineshA
+// 16 bit transfer, assumed MSB Byte first
 uint16_t SPIClass::transfer16(uint16_t _data, SPITransferMode _mode) {
-	union { uint16_t val; struct { uint8_t lsb; uint8_t msb; }; } t;
 
-	t.val = _data;
-
-    t.lsb = transfer(t.lsb, SPI_CONTINUE);
-	t.msb = transfer(t.msb, _mode);
-
-	return t.val;
+	return transfer16(_data);
 }
+
+// 16 bit Write
+uint16_t SPIClass::transfer16(uint16_t _data) {
+
+  // Wait for HW REQ=0
+  volatile int32_t x;
+  SPI_REG(SPI_REG_WDATA) = _data << 16;
+  SPI_REG(SPI_REG_CTRL) &= (~SPI_CTRL_OP(3)) & (~SPI_CTRL_TSIZE(3)) & (~SPI_CTRL_BYTE_ENDIAN(1)) & (~SPI_CTRL_CS_BIT(0xFF)) ;    // Reset the Type
+  SPI_REG(SPI_REG_CTRL) |= SPI_CTRL_CS_BIT(0x10) | SPI_CTRL_OP(SPI_DIR_TX_RX) | SPI_CTRL_OP_REQ(1) |  SPI_CTRL_TSIZE(SPI_LEN_1) | SPI_CTRL_BYTE_ENDIAN(SPI_BYTE_ENDIAN_BIG);  // Set to Write Mode & Transfer Size: 1 Byte & Request 
+
+  
+  while ((x =SPI_REG(SPI_REG_CTRL)) & SPI_CTRL_OP_REQ(1)) ;
+  // return SPI_Read(spi);
+  x = SPI_REG(SPI_REG_RDATA);
+  return x;
+  
+}
+
 
 // Need Update - Dinesh-A
 void SPIClass::transfer(byte _pin, void *_buf, size_t _count, SPITransferMode _mode) {
@@ -175,10 +198,8 @@ void SPIClass::transfer(byte _pin, void *_buf, size_t _count, SPITransferMode _m
 
 
   volatile int32_t x;
-  uint8_t r,d;
+  uint8_t r;
   while (_count > 1) {
-    // Prepare next byte
-    d = *(buffer+1);
     // Read transferred byte and send next one straight away
     r = x & 0xFF;
 

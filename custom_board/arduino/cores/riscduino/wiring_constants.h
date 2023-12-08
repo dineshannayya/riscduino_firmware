@@ -72,8 +72,15 @@ enum BitOrder {
 #define degrees(rad) ((rad)*RAD_TO_DEG)
 #define sq(x) ((x)*(x))
 
-#define interrupts() __enable_irq()
-#define noInterrupts() __disable_irq()
+// Enable Risc core External Interrupt
+#define interrupts() \
+      __asm __volatile( \
+      "li t0, 0x800; \
+      csrs mie, t0 "); 
+
+// Disable Risc core External Interrupt
+#define noInterrupts() __asm __volatile("csrw mie, 0; ");
+
 
 #define lowByte(w) ((uint8_t) ((w) & 0xff))
 #define highByte(w) ((uint8_t) ((w) >> 8))

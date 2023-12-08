@@ -38,7 +38,7 @@ char *dtostrf(double val, signed char char_num, unsigned char precision, char *c
   int       i, j ;
   float     r_val;
   long      i_val;
-  char      c, c_sign;
+  char      c_sign;
 
 
   // check the sign
