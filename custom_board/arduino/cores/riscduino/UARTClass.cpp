@@ -118,6 +118,9 @@ UARTClass::begin(unsigned long bauds)
   UART_REG(base,UART_REG_CTRL) |= UART_TXEN;
   UART_REG(base,UART_REG_CTRL) |= UART_RXEN;
 
+  UART_REG(base,UART_REG_CTRL) &= ~UART_TX_IFGM;
+  UART_REG(base,UART_REG_CTRL) |= UART_TX_IFG(2); // 2 bit IFG
+
 }
 
 

@@ -23,8 +23,9 @@
 #define UART_RXEN               0x2
 #define UART_RXWM(x)            (((x) & 0xffff) << 16)
 
-/* IP register */
-#define UART_IP_TXWM            0x1
-#define UART_IP_RXWM            0x2
+#define UART_TX_IFG(x)         ((x & 0x3) << 6)
+
+#define UART_TX_IFGM           (0x3 << 6)  // IFG MASK
+
 
 #endif /* _RISCDUINO_UART_H */
