@@ -1,32 +1,32 @@
 name= Riscduino Boards
-version=1.0.3
+version=1.4.6
 
 # Compile variables
 # ----------------------
 
-## Setting riscv32-unknown-elf-gcc
-compiler.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
-compiler.c.cmd.linux=riscv32-unknown-elf-gcc
-compiler.cpp.cmd.linux=riscv32-unknown-elf-g++
-compiler.ld.cmd.linux=riscv32-unknown-elf-ld
-compiler.ar.cmd.linux=riscv32-unknown-elf-ar
-compiler.objcopy.cmd.linux=riscv32-unknown-elf-objcopy
-compiler.elf2hex.cmd.linux=riscv32-unknown-elf-objcopy
-compiler.size.cmd.linux=riscv32-unknown-elf-size
+## Setting riscv64-zephyr-elf
+compiler.path={runtime.tools.riscv64-zephyr-elf.path}/bin/
+compiler.c.cmd.linux=riscv64-zephyr-elf-gcc
+compiler.cpp.cmd.linux=riscv64-zephyr-elf-g++
+compiler.ld.cmd.linux=riscv64-zephyr-elf-ld
+compiler.ar.cmd.linux=riscv64-zephyr-elf-ar
+compiler.objcopy.cmd.linux=riscv64-zephyr-elf-objcopy
+compiler.elf2hex.cmd.linux=riscv64-zephyr-elf-objcopy
+compiler.size.cmd.linux=riscv64-zephyr-elf-size
 
-compiler.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
-compiler.c.cmd.windows=riscv64-unknown-elf-gcc
-compiler.cpp.cmd.windows=riscv64-unknown-elf-g++
-compiler.ld.cmd.windows=riscv64-unknown-elf-ld
-compiler.ar.cmd.windows=riscv64-unknown-elf-ar
-compiler.objcopy.cmd.windows=riscv64-unknown-elf-objcopy
-compiler.elf2hex.cmd.windows=riscv64-unknown-elf-objcopy
-compiler.size.cmd.windows=riscv64-unknown-elf-size
+compiler.path={runtime.tools.riscv64-zephyr-elf.path}/bin/
+compiler.c.cmd.windows=riscv64-zephyr-elf-gcc
+compiler.cpp.cmd.windows=riscv64-zephyr-elf-g++
+compiler.ld.cmd.windows=riscv64-zephyr-elf-ld
+compiler.ar.cmd.windows=riscv64-zephyr-elf-ar
+compiler.objcopy.cmd.windows=riscv64-zephyr-elf-objcopy
+compiler.elf2hex.cmd.windows=riscv64-zephyr-elf-objcopy
+compiler.size.cmd.windows=riscv64-zephyr-elf-size
 
 
 
 compiler.sdk.path={runtime.platform.path}/sdk/bsp
-compiler.preproc.flags=-I{build.system.path}/include -I{compiler.sdk.path}/include -I{compiler.sdk.path}/env -I{compiler.sdk.path}/drivers -I{compiler.sdk.path}/env/{build.boardenv} -I{compiler.sdk.path}/env/uncache -I{runtime.tools.riscv32-unknown-elf-gcc.path}/riscv32-unknown-elf/include/c++/10.2.0/riscv32-unknown-elf/rv32imc/ilp32
+compiler.preproc.flags=-I{build.system.path}/include -I{compiler.sdk.path}/include -I{compiler.sdk.path}/env -I{compiler.sdk.path}/drivers -I{compiler.sdk.path}/env/{build.boardenv} -I{compiler.sdk.path}/env/uncache 
 
 
 

@@ -1,12 +1,12 @@
 # allow Clock Frequency selection
 
-menu.clksrc=CPU Clock Frequency
+menu.clock=CPU Clock Frequency
 menu.toolsloc=Tool Install Location
 
 uno.name=Riscduino Uno
 uno.menu.toolsloc.default=Default
 uno.menu.toolsloc.manual=Manual
-uno.menu.toolsloc.default.compiler.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
+uno.menu.toolsloc.default.compiler.path={runtime.tools.riscv64-zephyr-elf.path}/bin/
 uno.menu.toolsloc.manual.compiler.path=
 
 uno.vid.0=0x2341
@@ -37,14 +37,22 @@ uno.upload.tool.default=rdnodude
 uno.upload.protocol=riscduino
 uno.upload.maximum_size=8388608
 uno.upload.maximum_data_size=2048
-uno.upload.speed=57600
 
 
-uno.build.mcu=rv32imc
-uno.build.f_cpu=10000000L
+uno.build.mcu=rv32imc_zicsr_zifencei
 uno.build.board=RISCDUINO_UNO
 uno.build.core=riscduino
 uno.build.variant=standard
+
+uno.menu.clock.29M4912=Xtal 29.4912MHZ.
+uno.menu.clock.29M4912.build.f_cpu=29491200L
+uno.menu.clock.29M4912.upload.speed=230400
+
+uno.menu.clock.10M=Xtal 10MHz.
+uno.menu.clock.10M.build.f_cpu=10000000L
+uno.menu.clock.10M.upload.speed=57600
+
+
 
 # This sets a define for use in the compiled code.
 uno.build.boardenv=riscduino
