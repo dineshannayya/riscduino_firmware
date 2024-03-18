@@ -99,20 +99,20 @@ tools.rdnodude.upload.params.verbose=
 tools.rdnodude.upload.verify=
 tools.rdnodude.upload.params.noverify=
 
-tools.rdnodude.upload.pattern="{cmd.path}" {upload.verbose} {upload.verify} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
+tools.rdnodude.upload.pattern="{cmd.path}" {upload.verbose} {upload.verify} {upload.revision} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
 
 tools.rdnodude.program.params.verbose=
 tools.rdnodude.program.params.quiet=
 tools.rdnodude.program.verify=
 tools.rdnodude.program.params.noverify=
-tools.rdnodude.program.pattern="{cmd.path}" {upload.verbose} {upload.verify} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
+tools.rdnodude.program.pattern="{cmd.path}" {upload.verbose} {upload.verify} {upload.revision} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
 
 
 tools.rdnodude.erase.params.verbose=
 tools.rdnodude.erase.params.quiet=
-tools.rdnodude.erase.pattern="{cmd.path}" {upload.verbose} {upload.verify} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
+tools.rdnodude.erase.pattern="{cmd.path}" {upload.verbose} {upload.verify} {upload.revision} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
 
 tools.rdnodude.bootloader.params.verbose=
 tools.rdnodude.bootloader.params.quiet=
-tools.rdnodude.bootloader.pattern="{cmd.path}" {upload.verbose} {upload.verify} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
+tools.rdnodude.bootloader.pattern="{cmd.path}" {upload.verbose} {upload.verify} {upload.revision} {serial.port} {upload.speed} {build.path}/{build.project_name}.hex
 

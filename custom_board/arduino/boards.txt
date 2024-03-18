@@ -1,5 +1,6 @@
 # allow Clock Frequency selection
 
+menu.revision=Riscduino Chip Revision
 menu.clock=CPU Clock Frequency
 menu.toolsloc=Tool Install Location
 
@@ -52,7 +53,19 @@ uno.menu.clock.10M=Xtal 10MHz.
 uno.menu.clock.10M.build.f_cpu=10000000L
 uno.menu.clock.10M.upload.speed=57600
 
+uno.menu.clock.50M=Xtal 50MHz.
+uno.menu.clock.50M.build.f_cpu=50000000L
+uno.menu.clock.50M.upload.speed=115200
 
+
+uno.menu.revision.v3=Chip V3.
+uno.menu.revision.v3.upload.revision=v3
+
+uno.menu.revision.v2=Chip V2.
+uno.menu.revision.v2.upload.revision=v2
+
+uno.menu.revision.v1=Chip V1.
+uno.menu.revision.v1.upload.revision=v1
 
 # This sets a define for use in the compiled code.
 uno.build.boardenv=riscduino
