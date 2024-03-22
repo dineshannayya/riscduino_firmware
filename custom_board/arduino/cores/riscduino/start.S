@@ -12,6 +12,7 @@
 #define TEST_START_CMD                 0x00000001      // Test Start Indication
 #define WBI_CFG_DCG                    0x10030004      // Wishbone Interrconnect Dynamic Clock Gate Control
 #define WBI_DCG_CMD                    0x00000001      // Dynamic Clock Gate Command
+#define CONFIG_RV_BOOT_HART            0
 
 	.section .init
 	.globl _start
@@ -23,7 +24,25 @@
 _start:
 	la gp, _gp
 	la sp, _sp
+    addi  sp, sp, -4
+# This piece of code allocate 0x200 ( 512 Byte out of 2KB) stack memory for each core
+# core #0 uses 0x000600~0x007ff as stack
+# core #1 uses 0x000400-0x005ff as stack
+# core #2 uses 0x000200-0x003ff as stack
+# core #3 uses 0x000000-0x001ff as stack
+   lui   t0, 0
+   addi  t0, t0, 0x200
+   csrr  t1, mhartid
+   mul   t2, t0, t1
+   sub   sp, sp, t2
 
+
+	csrr a0, mhartid
+	li t0, CONFIG_RV_BOOT_HART
+	beq a0, t0, boot_first_core
+	j boot_secondary_core
+
+boot_first_core:
 	/* Load data section */
 	la a0, _data_lma
 	la a1, _data
@@ -75,6 +94,8 @@ _start:
      li  t1, WBI_DCG_CMD               
       sw  t1, (t0)                       
      */
+
+boot_secondary_core:
 	/* argc = argv = 0 */
 	li a0, 0
 	li a1, 0

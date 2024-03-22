@@ -67,6 +67,10 @@ int main( void )
   calc_inv(F_CPU/1000, &f_cpu_1000_inv);
   calc_inv(F_CPU/1000000, &f_cpu_1000000_inv);
   riscduino_specific_initialization();
+  #if defined(RISCDUINO_SIM)
+  #else
+  delay(2000); // add 2 second delay to uart master to take over programming
+  #endif
   setup();
   
   do {
