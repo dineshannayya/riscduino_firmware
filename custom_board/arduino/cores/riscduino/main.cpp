@@ -53,7 +53,7 @@ void riscduino_specific_initialization(void)
   riscduino_clock_setup();
 
   // Disable TAP, as these TAP used io[3:0]. If user want to using it as gpio
-  GLBL_REG(GLBL_MULTI_FUNC) &= ~IOF0_TAP_ENB; // Disable Master UART
+  //GLBL_REG(GLBL_MULTI_FUNC) &= ~IOF0_TAP_ENB; // Disable Master UART
   
 }
 
