@@ -32,13 +32,10 @@
 #ifndef _SOFTMASTERSPI_H
 #define _SOFTMASTERSPI_H
 
-#if (ARDUINO >= 100) 
-# include <Arduino.h>
-#else
-# include <WProgram.h>
-#endif
+#include <Arduino.h>
 
 #include <SPI.h>
+
 
 class SoftSpiMaster : public SPIClass {
     private:

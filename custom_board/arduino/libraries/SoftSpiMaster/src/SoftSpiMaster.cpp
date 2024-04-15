@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
+#include <Arduino.h>
 #include <SoftSpiMaster.h>
 
-SoftSpiMaster::SoftSpiMaster(uint8_t mosi, uint8_t miso, uint8_t sck) {
+SoftSpiMaster::SoftSpiMaster(uint8_t mosi, uint8_t miso, uint8_t sck):SPIClass(0) {
     _mosi = mosi;
     _miso = miso;
     _sck = sck;
@@ -100,11 +100,8 @@ void SoftSpiMaster::setClockDivider(uint32_t div) {
         case SPI_CLOCK_DIV64:
             _delay = 64;
             break;
-        case SPI_CLOCK_DIV128:
-            _delay = 128;
-            break;
         default:
-            _delay = 128;
+            _delay = 64;
             break;
     }
 }
