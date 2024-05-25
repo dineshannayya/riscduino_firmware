@@ -99,6 +99,8 @@ void attachInterrupt(uint32_t intnum, voidFuncPtr callback, uint32_t mode)
   } else { // Other then GPIO interrupt, config only GLBL
 	  GLBL_REG(GLBL_INTR_ENB) |= (1 << intnum );
   }
+  // Assuming single core case, interrupt enable for core0
+  RISCV_REG(RISCV_CORE0_INTR_MASK) |= (1 << intnum );
   
   //write_csr(CSR_IPIC_IDX, intnum);
   write_csr(0xbf6, intnum);

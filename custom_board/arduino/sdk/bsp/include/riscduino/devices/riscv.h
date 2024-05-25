@@ -1,0 +1,30 @@
+
+#ifndef _RISCDUINO_RISCV_H
+#define _RISCDUINO_RISCV_H
+
+
+#define RISCV_TIMER_CONTROL        (0x0)
+#define RISCV_TIMER_DIVIDER        (0x4)
+#define RISCV_TIMER_MTIMELO        (0x8)
+#define RISCV_TIMER_MTIMEHI        (0xC)
+#define RISCV_TIMER_MTIMECMP0LO    (0x10)
+#define RISCV_TIMER_MTIMECMP0HI    (0x14)
+#define RISCV_TIMER_MTIMECMP1LO    (0x18)
+#define RISCV_TIMER_MTIMECMP1HI    (0x1C)
+#define RISCV_TIMER_MTIMECMP2LO    (0x20)
+#define RISCV_TIMER_MTIMECMP2HI    (0x24)
+#define RISCV_TIMER_MTIMECMP3LO    (0x28)
+#define RISCV_TIMER_MTIMECMP3HI    (0x2C)
+#define RISCV_MSIP_HART0           (0x30)
+#define RISCV_MSIP_HART1           (0x34)
+#define RISCV_MSIP_HART2           (0x38)
+#define RISCV_MSIP_HART3           (0x3C)
+#define RISCV_GLBL_CONTROL         (0x40)
+#define RISCV_CLK_CONTROL          (0x44)
+#define RISCV_CORE0_INTR_STATUS    (0x50)
+#define RISCV_CORE0_INTR_MASK      (0x54)
+#define RISCV_CORE1_INTR_STATUS    (0x60)
+#define RISCV_CORE1_INTR_MASK      (0x64)
+
+
+#endif /* _RISCDUINO_RISCV_H */

@@ -19,6 +19,7 @@
 #include "riscduino/devices/spi.h"
 #include "riscduino/devices/wire.h"
 #include "riscduino/devices/uart.h"
+#include "riscduino/devices/riscv.h"
 
 /****************************************************************************
  * Platform definitions
@@ -35,6 +36,7 @@
 #define UART1_BASE_ADDR         _AC(0x10010100,UL)
 #define WIRE_BASE_ADDR          _AC(0x10010040,UL)
 #define SPI0_BASE_ADDR          _AC(0x100100C0,UL)
+#define RISCV_BASE_ADDR         _AC(0x0C490000,UL)
 
 // Need to Remove It - Dinesh A
 #define CLINT_BASE_ADDR _AC(0x02000000,UL)
@@ -163,6 +165,7 @@
 #define UART1_REG(offset) _REG32(UART1_BASE_ADDR, offset)
 #define UART_REG(base,offset) _REG32(base, offset)
 #define WIRE_REG(offset) _REG32(WIRE_BASE_ADDR, offset)
+#define RISCV_REG(offset) _REG32(RISCV_BASE_ADDR, offset)
 
 
 // GPIO Port Defination
