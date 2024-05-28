@@ -26,7 +26,11 @@ SECTIONS
 
   /* code segment */
   .text.init 0 : { 
-    FILL(0);
+    LONG(0xAABBCCDD);
+    LONG(0x100F0000);
+    LONG(0x10020004);
+    LONG(0x00000103);
+    LONG(0xFF000000);
     . = 0x100 - 12;
     SIM_EXIT = .;
     LONG(0x13);
